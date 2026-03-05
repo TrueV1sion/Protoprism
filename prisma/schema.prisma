@@ -73,6 +73,7 @@ model Finding {
   confidence   String @default("MEDIUM") // HIGH | MEDIUM | LOW
   evidenceType String @default("direct") // direct | inferred | analogical | modeled
   source       String
+  sourceTier   String @default("SECONDARY") // PRIMARY | SECONDARY | TERTIARY
   implication  String
   action       String @default("keep")   // keep | dismiss | boost | flag
   tags         String @default("[]")     // JSON array
