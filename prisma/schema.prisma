@@ -115,7 +115,19 @@ model Presentation {
 // ─── Settings ────────────────────────────────────────────
 // Platform configuration (singleton — one row with id="default")
 model Settings {
-  id        String   @id @default("default")
-  data      String   @default("{}")   // JSON blob of SettingsState
-  updatedAt DateTime @updatedAt
+  id                  String   @id @default("default")
+  data                String   @default("{}")   // JSON blob of SettingsState
+  onboardingDismissed Boolean  @default(false)
+  hasCompletedTour    Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+// ─── ApiKey ──────────────────────────────────────────────
+// Encrypted API keys for external providers
+model ApiKey {
+  id           String   @id @default(uuid())
+  provider     String   @unique
+  encryptedKey String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
