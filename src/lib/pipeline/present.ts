@@ -14,7 +14,7 @@
  * - Sonnet model (MODELS.PRESENT) for fast, high-quality HTML generation
  * - Prompt caching for the presentation system spec (avoids re-parsing
  *   on repeat runs)
- * - max_tokens: 24000 (presentations are 700-1500+ lines of HTML)
+ * - max_tokens: 64000 (presentations are 700-1500+ lines of HTML; EXTENDED tier can exceed 24K tokens)
  * - No tools — pure text generation
  */
 
@@ -472,13 +472,14 @@ export async function present(input: PresentInput): Promise<PresentationResult> 
 
   const response = await client.messages.create({
     model: MODELS.PRESENT,
-    max_tokens: 24000,
+    max_tokens: 64000,
     system: [cachedSystemPrompt(presentationSpec)],
     messages: [{ role: "user", content: userPrompt }],
     stream: true,
   });
 
   let fullText = "";
+  let stopReason = "unknown";
   for await (const chunk of response) {
     if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
       fullText += chunk.delta.text;
@@ -486,8 +487,13 @@ export async function present(input: PresentInput): Promise<PresentationResult> 
         type: "thinking_token", // Reuse this to keep SSE alive
         token: chunk.delta.text,
       });
+    } else if (chunk.type === "message_delta") {
+      stopReason = (chunk as any).delta?.stop_reason ?? stopReason;
     } else if (chunk.type === "message_stop") {
-      console.log("[PRESENT] Generation complete. Stop Reason:", (chunk as any).stop_reason);
+      console.log(`[PRESENT] Generation complete. Stop reason: ${stopReason}, output length: ${fullText.length} chars`);
+      if (stopReason === "max_tokens") {
+        console.warn("[PRESENT] WARNING: Output was truncated by max_tokens limit. Presentation may be incomplete.");
+      }
     }
   }
 

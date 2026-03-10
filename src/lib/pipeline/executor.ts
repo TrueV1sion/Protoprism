@@ -423,7 +423,16 @@ export async function executePipeline(
           `  <script src="/js/presentation.js" defer></script>\n</body>`,
         );
       } else {
-        // Truncated HTML — append closing tags + script
+        // Truncated HTML — close any open sections and append closing tags + script
+        // Count open vs closed sections to repair the document structure
+        const openSections = (finalHtml.match(/<section/g) || []).length;
+        const closedSections = (finalHtml.match(/<\/section>/g) || []).length;
+        const unclosedSections = openSections - closedSections;
+        if (unclosedSections > 0) {
+          // Close open divs heuristically and then close the section(s)
+          finalHtml += `\n</div></div></section>`.repeat(unclosedSections);
+          console.warn(`[PRESENT] Repaired ${unclosedSections} unclosed section(s) in truncated HTML`);
+        }
         finalHtml += `\n<script src="/js/presentation.js" defer></script>\n</body>\n</html>`;
       }
     }
@@ -476,14 +485,24 @@ export async function executePipeline(
     const errorMessage =
       error instanceof Error ? error.message : String(error);
 
+    // Log errors to server console for debugging
+    console.error(`[EXECUTOR] Pipeline ${runId} failed in phase ${currentPhase}:`, errorMessage);
+    if (error instanceof Error && error.stack) {
+      console.error(`[EXECUTOR] Stack trace:`, error.stack);
+    }
+
     // Clean up pending approval if pipeline fails during blueprint wait
     cancelApproval(runId);
 
     // Update run status
-    await prisma.run.update({
-      where: { id: runId },
-      data: { status: isAbort ? "CANCELLED" : "FAILED" },
-    });
+    try {
+      await prisma.run.update({
+        where: { id: runId },
+        data: { status: isAbort ? "CANCELLED" : "FAILED" },
+      });
+    } catch (dbErr) {
+      console.error(`[EXECUTOR] Failed to update run status:`, dbErr);
+    }
 
     if (isAbort) {
       emitEvent({ type: "error", message: "Pipeline cancelled by user", phase: currentPhase });

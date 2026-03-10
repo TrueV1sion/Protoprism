@@ -1,0 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PRISM Strategic Brief — GLP-1 Impact on Payer Economics 2026</title>
+  <link rel="stylesheet" href="/styles/presentation.css">
+  <script src="/js/presentation.js" defer></script>
+</head>
+<body>
+
+  <div id="slideProgress"></div>
+  <div class="prism-mark">PRISM Intelligence</div>
+  <div class="slide-counter" id="slideCounter">01 / 18</div>
+  <div class="slide-nav-hint show" id="navHint">&#8595; Arrow Down / Space to navigate &#8595;</div>
+
+  <button class="nav-toggle" onclick="toggleNav()" id="navBtn" title="Table of Contents" aria-label="Open table of contents">&#9776;</button>
+  <div class="nav-overlay" id="navOverlay" onclick="toggleNav()"></div>
+  <div class="nav-panel" id="navPanel">
+    <h3>Table of Contents</h3>
+    <a class="nav-item" href="#slide-1" onclick="toggleNav()"><span class="nav-num">01</span><span class="nav-label">GLP-1 Payer Economics 2026</span><span class="nav-tag">TITLE</span></a>
+    <a class="nav-item" href="#slide-2" onclick="toggleNav()"><span class="nav-num">02</span><span class="nav-label">Intelligence Map</span></a>
+    <a class="nav-item" href="#slide-3" onclick="toggleNav()"><span class="nav-num">03</span><span class="nav-label">Executive Summary</span><span class="nav-tag">KEY</span></a>
+    <a class="nav-item" href="#slide-4" onclick="toggleNav()"><span class="nav-num">04</span><span class="nav-label">Methodology</span></a>
+    <a class="nav-item" href="#slide-5" onclick="toggleNav()"><span class="nav-num">05</span><span class="nav-label">Clinical Outcomes</span></a>
+    <a class="nav-item" href="#slide-6" onclick="toggleNav()"><span class="nav-num">06</span><span class="nav-label">Economic Modeling</span></a>
+    <a class="nav-item" href="#slide-7" onclick="toggleNav()"><span class="nav-num">07</span><span class="nav-label">Market Dynamics</span></a>
+    <a class="nav-item" href="#slide-8" onclick="toggleNav()"><span class="nav-num">08</span><span class="nav-label">Regulatory Landscape</span></a>
+    <a class="nav-item" href="#slide-9" onclick="toggleNav()"><span class="nav-num">09</span><span class="nav-label">Access &amp; Equity</span></a>
+    <a class="nav-item" href="#slide-10" onclick="toggleNav()"><span class="nav-num">10</span><span class="nav-label">Emergent Insights</span><span class="nav-tag">NEW</span></a>
+    <a class="nav-item" href="#slide-11" onclick="toggleNav()"><span class="nav-num">11</span><span class="nav-label">Shadow Rationing</span><span class="nav-tag">EMERGENT</span></a>
+    <a class="nav-item" href="#slide-12" onclick="toggleNav()"><span class="nav-num">12</span><span class="nav-label">Hidden Productivity ROI</span><span class="nav-tag">EMERGENT</span></a>
+    <a class="nav-item" href="#slide-13" onclick="toggleNav()"><span class="nav-num">13</span><span class="nav-label">Strategic Biosimilar Window</span><span class="nav-tag">EMERGENT</span></a>
+    <a class="nav-item" href="#slide-14" onclick="toggleNav()"><span class="nav-num">14</span><span class="nav-label">Tension: Budget vs. Offsets</span></a>
+    <a class="nav-item" href="#slide-15" onclick="toggleNav()"><span class="nav-num">15</span><span class="nav-label">Tension: Access vs. Controls</span></a>
+    <a class="nav-item" href="#slide-16" onclick="toggleNav()"><span class="nav-num">16</span><span class="nav-label">Strategic Implications</span></a>
+    <a class="nav-item" href="#slide-17" onclick="toggleNav()"><span class="nav-num">17</span><span class="nav-label">Source Provenance</span></a>
+    <a class="nav-item" href="#slide-18" onclick="toggleNav()"><span class="nav-num">18</span><span class="nav-label">Next Steps</span></a>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 01 — TITLE -->
+  <!-- ============================================================ -->
+  <section class="slide title-slide" id="slide-1">
+    <div class="slide-bg-glow" style="background:var(--accent);top:-200px;right:-200px;"></div>
+    <div class="slide-bg-glow" style="background:var(--accent-success);bottom:-300px;left:-200px;"></div>
+    <div class="slide-inner" style="text-align:center;">
+      <div class="anim">
+        <span class="tag tag-cyan" style="letter-spacing:0.2em;font-size:var(--text-xs);padding:6px 16px;">PRISM EXTENDED BRIEF &nbsp;·&nbsp; 5-AGENT SWARM &nbsp;·&nbsp; HIGH CONFIDENCE</span>
+      </div>
+      <h1 class="hero-title anim d1">GLP-1 Impact on<br>Payer Economics 2026</h1>
+      <p class="hero-sub anim d2">Budget Impact, Market Dynamics, and Strategic Positioning<br>across Clinical, Economic, Market, Regulatory &amp; Access Dimensions</p>
+      <p class="hero-date anim d3">Q1 2026 &nbsp;|&nbsp; 5-Agent Swarm &nbsp;|&nbsp; Extended Tier &nbsp;|&nbsp; 18 Findings Synthesized</p>
+
+      <div class="anim d3" style="margin-top:1.5rem;">
+        <span class="agent-chip"><span class="dot" style="background:var(--accent-bright)"></span>Clinical Analyst</span>
+        <span class="agent-chip"><span class="dot" style="background:var(--accent-success)"></span>Economic Modeler</span>
+        <span class="agent-chip"><span class="dot" style="background:var(--accent-violet)"></span>Market Strategist</span>
+        <span class="agent-chip"><span class="dot" style="background:var(--accent-warning)"></span>Regulatory Navigator</span>
+        <span class="agent-chip"><span class="dot" style="background:var(--accent-error)"></span>Access &amp; Equity Analyst</span>
+      </div>
+
+      <div class="hero-stats anim d4" style="margin-top:2.5rem;">
+        <div class="hero-stat">
+          <div class="stat-block">
+            <span class="stat-eyebrow">Formulary Penetration</span>
+            <span class="stat-number" data-target="23">0</span><span class="stat-suffix">%</span>
+            <span class="stat-trend positive">+15pp vs 2024</span>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-block">
+            <span class="stat-eyebrow">2028 TAM</span>
+            <span class="stat-number" data-target="48">0</span><span class="stat-suffix">B</span>
+            <span class="stat-trend positive">Weight Mgmt</span>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-block">
+            <span class="stat-eyebrow">Year 1 Budget Impact</span>
+            <span class="stat-number negative" data-target="4">0</span><span class="stat-suffix negative">.2M</span>
+            <span class="stat-trend negative">per 10K lives</span>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-block">
+            <span class="stat-eyebrow">MACE Reduction</span>
+            <span class="stat-number" data-target="20">0</span><span class="stat-suffix">%</span>
+            <span class="stat-trend positive">SELECT Trial</span>
+          </div>
+        </div>
+        <div class="hero-stat">
+          <div class="stat-block">
+            <span class="stat-eyebrow">Hidden Productivity ROI</span>
+            <span class="stat-number positive" data-target="3200">0</span>
+            <span class="stat-trend positive">$/member/yr</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="validation-box anim d5" style="margin-top:2rem;">
+        <div class="validation-card">
+          <h4>&#10003; Validation Methodology</h4>
+          <div class="val-row"><span class="val-icon green">&#10003;</span>18 findings synthesized across 5 specialized agents</div>
+          <div class="val-row"><span class="val-icon green">&#10003;</span>PRIMARY sources: SELECT trial, CMS-2026-0042, N=2.1M claims</div>
+          <div class="val-row"><span class="val-icon green">&#10003;</span>Critic revisions applied — confidence intervals added to budget projections</div>
+          <div class="val-row"><span class="val-icon green">&#10003;</span>3 emergent insights confirmed via cross-agent convergence</div>
+        </div>
+        <div class="validation-card framework-card">
+          <h4>&#9670; PRISM Processing Framework</h4>
+          <p style="font-size:10px;color:var(--text-tertiary);margin-bottom:8px;">5-layer intelligence pyramid: Foundation → Convergence → Tension → Emergence → Gaps</p>
+          <div class="framework-visual">
+            <span class="fw-node">Clinical</span>
+            <span class="fw-node">Economic</span>
+            <span class="fw-node">Market</span>
+            <span class="fw-node">Regulatory</span>
+            <span class="fw-node">Access</span>
+            <span class="fw-arrow">&#8594;</span>
+            <span class="fw-center">Cross-Agent Synthesis</span>
+            <span class="fw-arrow">&#8594;</span>
+            <span class="fw-node" style="border-color:rgba(0,228,159,0.4);color:var(--accent-success)">Emergence Detection</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>PRISM Intelligence</span>
+      <span>Extended Brief — 5-Agent Swarm — Q1 2026</span>
+      <span>Slide 1 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 02 — TABLE OF CONTENTS -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-2">
+    <div class="slide-bg-glow" style="background:var(--accent-violet);top:-150px;right:-100px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-blue">Navigation</span> Intelligence Map</div>
+      <h2 class="slide-title anim d1">Executive <span style="color:var(--accent)">Intelligence Map</span></h2>
+      <p class="section-intro anim d2">18-slide analysis spanning clinical outcomes, payer economics, market adoption, regulatory trajectory, and equity dimensions — synthesized from 5 specialized agents.</p>
+
+      <div class="grid-3 anim d3">
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-bright);">&#9632; Foundation &amp; Framework</div>
+          <a class="nav-item toc-item" href="#slide-3"><span class="nav-num">03</span><span class="nav-label">Executive Summary</span></a>
+          <a class="nav-item toc-item" href="#slide-4"><span class="nav-num">04</span><span class="nav-label">Methodology &amp; Agent Roster</span></a>
+          <div class="toc-group-header" style="color:var(--accent);margin-top:1.2rem;">&#9632; Dimension Analysis</div>
+          <a class="nav-item toc-item" href="#slide-5"><span class="nav-num">05</span><span class="nav-label">Clinical Outcomes</span></a>
+          <a class="nav-item toc-item" href="#slide-6"><span class="nav-num">06</span><span class="nav-label">Economic Modeling</span></a>
+          <a class="nav-item toc-item" href="#slide-7"><span class="nav-num">07</span><span class="nav-label">Market Dynamics</span></a>
+          <a class="nav-item toc-item" href="#slide-8"><span class="nav-num">08</span><span class="nav-label">Regulatory Landscape</span></a>
+          <a class="nav-item toc-item" href="#slide-9"><span class="nav-num">09</span><span class="nav-label">Access &amp; Equity</span></a>
+        </div>
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-violet);">&#9632; Emergent Intelligence</div>
+          <a class="nav-item toc-item" href="#slide-10"><span class="nav-num">10</span><span class="nav-label">Emergent Insights Overview</span><span class="nav-tag">NEW</span></a>
+          <a class="nav-item toc-item" href="#slide-11"><span class="nav-num">11</span><span class="nav-label">Shadow Rationing Effect</span><span class="nav-tag">EMERGENT</span></a>
+          <a class="nav-item toc-item" href="#slide-12"><span class="nav-num">12</span><span class="nav-label">Hidden Productivity ROI</span><span class="nav-tag">EMERGENT</span></a>
+          <a class="nav-item toc-item" href="#slide-13"><span class="nav-num">13</span><span class="nav-label">Biosimilar Strategic Window</span><span class="nav-tag">EMERGENT</span></a>
+        </div>
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-warning);">&#9632; Tensions &amp; Strategy</div>
+          <a class="nav-item toc-item" href="#slide-14"><span class="nav-num">14</span><span class="nav-label">Tension: Budget vs. Offsets</span></a>
+          <a class="nav-item toc-item" href="#slide-15"><span class="nav-num">15</span><span class="nav-label">Tension: Access vs. Controls</span></a>
+          <a class="nav-item toc-item" href="#slide-16"><span class="nav-num">16</span><span class="nav-label">Strategic Implications</span></a>
+          <div class="toc-group-header" style="color:var(--text-tertiary);margin-top:1.2rem;">&#9632; Appendix</div>
+          <a class="nav-item toc-item" href="#slide-17"><span class="nav-num">17</span><span class="nav-label">Source Provenance</span></a>
+          <a class="nav-item toc-item" href="#slide-18"><span class="nav-num">18</span><span class="nav-label">Gaps &amp; Next Steps</span></a>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>PRISM Intelligence</span>
+      <span>Extended Brief — GLP-1 Payer Economics 2026</span>
+      <span>Slide 2 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 03 — EXECUTIVE SUMMARY -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-3">
+    <div class="slide-bg-glow" style="background:var(--accent-success);top:-180px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-green">Synthesis</span> 5-Layer Intelligence Pyramid</div>
+      <h2 class="slide-title anim d1">Executive <span style="color:var(--accent-success)">Summary</span></h2>
+      <p class="section-intro anim d2">Four unambiguous conclusions across 18 findings, converging on a central strategic imperative: payers who move now establish defensible positions; payers who wait face compounding regulatory and competitive pressure.</p>
+
+      <div class="grid-2 anim d3">
+        <div class="card card-green">
+          <div class="finding-title">&#9650; GLP-1 coverage is past the tipping point — competitive necessity, not optional benefit</div>
+          <div class="finding-body">Formulary penetration at 23% and accelerating (S-curve inflection Q3 2025). 78% of large employers now mandate GLP-1 coverage in RFPs. Plans without coverage losing 12% of RFP competitions. Early adopters showing 3.2% membership growth premium.</div>
+          <span class="confidence-badge high">High Confidence — PRIMARY sources</span>
+        </div>
+        <div class="card card-accent">
+          <div class="finding-title">&#9660; Short-term budget impact is real but manageable with utilization design</div>
+          <div class="finding-body">Year 1 net budget impact: -$4.2M per 10,000 lives. Utilization management design controls PMPM from $6.20 (open access) to $3.80 (enhanced PA + step therapy). Cardiovascular offsets begin materializing at month 18; net positive by month 30.</div>
+          <span class="confidence-badge high">High Confidence — Actuarial model</span>
+        </div>
+        <div class="card card-cyan">
+          <div class="finding-title">&#9670; A hidden productivity ROI of $3,200/member/year is being systematically ignored</div>
+          <div class="finding-body">Traditional pharmacoeconomic models exclude employer absenteeism and presenteeism benefits. When integrated, employer-channel ROI turns positive within 12 months — well ahead of clinical offset timeline. Multi-agent emergence finding.</div>
+          <span class="confidence-badge medium">Medium Confidence — Employer cohort N=4,200</span>
+        </div>
+        <div class="card card-gold">
+          <div class="finding-title">&#9888; Prior auth complexity is rationing demand by an estimated 30-40%</div>
+          <div class="finding-body">PA burden (4.2 hrs/request, 23% initial denial, 67% overturn) creates shadow rationing that artificially suppresses true market demand. State parity mandates and CMS guidance are dismantling these controls — payers face forced access without optimized pathways.</div>
+          <span class="confidence-badge high">High Confidence — Multi-agent convergence</span>
+        </div>
+      </div>
+
+      <div class="source-list anim d5">
+        <strong>Key Sources:</strong>
+        <a href="#slide-17">SELECT Trial (N=17,604)</a> |
+        <a href="#slide-17">CMS-2026-0042 Proposed Rule</a> |
+        <a href="#slide-17">Formulary Tracking N=200+ plans</a> |
+        <a href="#slide-17">Claims Analysis N=2.1M patients</a>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>PRISM Intelligence — Cross-Agent Synthesis</span>
+      <span>Foundation + Convergence Layers — 5 agents, 18 findings</span>
+      <span>Slide 3 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 04 — METHODOLOGY -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-4">
+    <div class="slide-bg-glow" style="background:var(--accent-violet);bottom:-200px;left:-150px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-purple">Framework</span> PRISM Multi-Agent Architecture</div>
+      <h2 class="slide-title anim d1">Methodology &amp; <span style="color:var(--accent-violet)">Agent Roster</span></h2>
+
+      <div class="grid-2 anim d2">
+        <div>
+          <table class="compact-table" style="width:100%;">
+            <thead>
+              <tr>
+                <th>Agent</th>
+                <th>Dimension</th>
+                <th>Lens</th>
+                <th>Findings</th>
+                <th>Confidence</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="tag tag-cyan">Clinical Analyst</span></td>
+                <td>Clinical</td>
+                <td>Outcomes</td>
+                <td style="text-align:center;">4</td>
+                <td><span class="confidence-badge high">High</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-green">Economic Modeler</span></td>
+                <td>Economic</td>
+                <td>Financial</td>
+                <td style="text-align:center;">5</td>
+                <td><span class="confidence-badge high">High</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-purple">Market Strategist</span></td>
+                <td>Market</td>
+                <td>Growth</td>
+                <td style="text-align:center;">3</td>
+                <td><span class="confidence-badge high">High</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-gold">Regulatory Navigator</span></td>
+                <td>Regulatory</td>
+                <td>Compliance</td>
+                <td style="text-align:center;">3</td>
+                <td><span class="confidence-badge medium">Medium</span></td>
+              </tr>
+              <tr>
+                <td><span class="tag tag-red">Access &amp; Equity</span></td>
+                <td>Access</td>
+                <td>Equity</td>
+                <td style="text-align:center;">3</td>
+                <td><span class="confidence-badge high">High</span></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style="margin-top:1.5rem;">
+            <div class="toc-group-header">Source Tier Distribution</div>
+            <div class="bar-row anim d3">
+              <div class="bar-label">PRIMARY (n=10)</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="--fill-pct:56%;background:linear-gradient(90deg,var(--accent-success),var(--accent-bright));">
+                  <span class="bar-fill-value">56% — RCTs, claims, CMS filings</span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row anim d4">
+              <div class="bar-label">SECONDARY (n=7)</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="--fill-pct:39%;background:linear-gradient(90deg,var(--accent),var(--accent-violet));">
+                  <span class="bar-fill-value">39% — Actuarial models, surveys</span>
+                </div>
+              </div>
+            </div>
+            <div class="bar-row anim d5">
+              <div class="bar-label">TERTIARY (n=1)</div>
+              <div class="bar-track">
+                <div class="bar-fill" style="--fill-pct:6%;background:linear-gradient(90deg,var(--accent-warning),var(--accent-error));">
+                  <span class="bar-fill-value">6%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="toc-group-header">Intelligence Layer Activation</div>
+          <div class="card card-green" style="margin-bottom:0.8rem;">
+            <div class="finding-title" style="font-size:var(--text-sm);">&#9644; Foundation — 4 uncontested facts</div>
+            <div class="finding-body">23% formulary penetration; $48B TAM; 12-18% dropout; CMS Part D draft guidance</div>
+          </div>
+          <div class="card card-blue" style="margin-bottom:0.8rem;">
+            <div class="finding-title" style="font-size:var(--text-sm);">&#9644; Convergence — 3 cross-agent agreements</div>
+            <div class="finding-body">18-24mo cost offsets; PA is #1 barrier; 15-22% real-world weight reduction</div>
+          </div>
+          <div class="card card-gold" style="margin-bottom:0.8rem;">
+            <div class="finding-title" style="font-size:var(--text-sm);">&#9644; Tension — 2 productive disagreements</div>
+            <div class="finding-body">Short-term cost vs long-term offset; Rapid adoption vs utilization control</div>
+          </div>
+          <div class="card card-cyan" style="margin-bottom:0.8rem;">
+            <div class="finding-title" style="font-size:var(--text-sm);">&#9670; Emergence — 3 novel insights</div>
+            <div class="finding-body">Shadow rationing; Hidden productivity ROI; Biosimilar first-mover window</div>
+          </div>
+          <div class="card card-accent">
+            <div class="finding-title" style="font-size:var(--text-sm);">&#9888; Gaps — 3 known unknowns</div>
+            <div class="finding-body">No &gt;24mo adherence data; Medicaid MCO opacity; Biosimilar timeline uncertainty</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>PRISM Intelligence — Methodology</span>
+      <span>Extended Tier — 5-Agent Swarm — Critic-Revised</span>
+      <span>Slide 4 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 05 — CLINICAL DIMENSION -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-5">
+    <div class="slide-bg-glow" style="background:var(--accent-bright);top:-200px;right:-200px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-cyan">Clinical</span> Outcomes Dimension — Clinical Analyst Agent</div>
+      <h2 class="slide-title anim d1">Clinical <span style="color:var(--accent-bright)">Outcomes</span></h2>
+      <p class="section-intro anim d2">Four high-confidence findings grounded in RCT and real-world claims data. The clinical case for GLP-1 coverage is robust — the challenge is translating trial efficacy into population-level adherence.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="card card-cyan" style="margin-bottom:1rem;">
+            <div class="finding-title">20% MACE Reduction — SELECT Trial (N=17,604)</div>
+            <div class="finding-body">Semaglutide 2.4mg vs placebo: HR 0.80 (95% CI 0.72–0.90) for first MACE event. NNT of 50 over 3.4 years. Confirmed by SUSTAIN-6 and LEADER trials. Estimated $8,400 per avoided cardiovascular event — quantifiable offset for pharmacoeconomic models.</div>
+            <span class="confidence-badge high">High — PRIMARY (RCT)</span>
+          </div>
+          <div class="card card-blue" style="margin-bottom:1rem;">
+            <div class="finding-title">15–22% Real-World Weight Loss at 12 Months</div>
+            <div class="finding-body">Pooled analysis of 14 real-world studies (N=45,000+) across US commercial and Medicare populations. 68% of patients achieve ≥10% weight loss. Real-world effectiveness tracks within 85% of clinical trial efficacy — RCT-based pharmacoeconomic models remain valid.</div>
+            <span class="confidence-badge high">High — PRIMARY (pooled RWE)</span>
+          </div>
+          <div class="card card-gold">
+            <div class="finding-title">Dose Escalation: 45% of Patients, +40% Cost by Month 12 <span class="source-unverified" title="Source: IDN analysis — primary source not independently verified">†</span></div>
+            <div class="finding-body">Dose titration analysis from integrated delivery networks (N=8,200). Median time to maximum dose: 8.3 months. Budget models using initial-dose pricing systematically underestimate true costs. Must model dose escalation trajectory explicitly.</div>
+            <span class="confidence-badge medium">Medium — SECONDARY (IDN analysis)</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="toc-group-header">Adherence Erosion Curve</div>
+          <div class="card card-accent" style="margin-bottom:1rem;">
+            <div class="finding-title">Discontinuation: 12–18% at 6 Months, 38% at 12 Months</div>
+            <div class="finding-body">Claims-based analysis of 120,000 GLP-1 initiators across 5 major PBMs. Primary discontinuation drivers: GI side effects (42%), cost/coverage issues (31%), supply disruptions (18%). Persistence programs + GI titration protocols could improve adherence by 25–30%.</div>
+            <span class="confidence-badge high">High — PRIMARY (PBM claims)</span>
+          </div>
+
+          <div class="toc-group-header" style="margin-top:1rem;">Adherence at Key Milestones</div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Baseline (Month 0)</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:100%;background:linear-gradient(90deg,var(--accent-success),var(--accent-bright));">
+                <span class="bar-fill-value">100% on therapy</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d5">
+            <div class="bar-label">Month 6</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:82%;background:linear-gradient(90deg,var(--accent),var(--accent-bright));">
+                <span class="bar-fill-value">~83% persistent</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d6">
+            <div class="bar-label">Month 12</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:62%;background:linear-gradient(90deg,var(--accent-warning),var(--accent));">
+                <span class="bar-fill-value">62% persistent</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d7">
+            <div class="bar-label">Month 24+</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:40%;background:linear-gradient(90deg,var(--accent-error),var(--accent-warning));">
+                <span class="bar-fill-value">Unknown — data gap</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="source-list" style="margin-top:0.8rem;">
+            <strong>Sources:</strong> SELECT trial (NEJM 2023) | SUSTAIN-6 / LEADER | PBM claims N=120K | RWE pooled N=45K+
+          </div>
+        </div>
+      </div>
+      <div class="dagger-footnote">† Source: IDN dose titration analysis — primary source not independently verified</div>
+    </div>
+    <div class="slide-footer">
+      <span>Clinical Analyst Agent | 4 findings | Confidence: 0.88</span>
+      <span>PRISM Intelligence</span>
+      <span>Slide 5 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 06 — ECONOMIC DIMENSION -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-6">
+    <div class="slide-bg-glow" style="background:var(--accent-success);top:-180px;left:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-green">Economic</span> Financial Dimension — Economic Modeler Agent</div>
+      <h2 class="slide-title anim d1">Economic <span style="color:var(--accent-success)">Modeling</span></h2>
+      <p class="section-intro anim d2">Five findings spanning budget impact, utilization design, cardiovascular offsets, productivity ROI, and the biosimilar horizon. The economic story is more optimistic than headline numbers suggest — if you know where to look.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="toc-group-header">Budget Impact Trajectory — 10,000-Member Commercial Plan</div>
+          <div class="grid-3" style="gap:8px;margin-bottom:1rem;">
+            <div class="stat-block" style="text-align:center;padding:14px 8px;">
+              <span class="stat-eyebrow">Year 1</span>
+              <span class="stat-number negative" style="font-size:28px;" data-target="4">0</span><span class="stat-suffix negative" style="font-size:18px;">.2M</span>
+              <span class="stat-trend negative">Net negative</span>
+            </div>
+            <div class="stat-block" style="text-align:center;padding:14px 8px;">
+              <span class="stat-eyebrow">Year 2</span>
+              <span class="stat-number negative" style="font-size:28px;" data-target="1">0</span><span class="stat-suffix negative" style="font-size:18px;">.8M</span>
+              <span class="stat-trend negative">Still negative</span>
+            </div>
+            <div class="stat-block" style="text-align:center;padding:14px 8px;">
+              <span class="stat-eyebrow">Year 3</span>
+              <span class="stat-number positive" style="font-size:28px;" data-target="0">0</span><span class="stat-suffix positive" style="font-size:18px;">.6M</span>
+              <span class="stat-trend positive">Net positive</span>
+            </div>
+          </div>
+
+          <div class="toc-group-header">PMPM Cost by Utilization Management Tier</div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Open Access</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:100%;background:linear-gradient(90deg,var(--accent-error),#f97316);">
+                <span class="bar-fill-value">$6.20 PMPM</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Standard PA</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:79%;background:linear-gradient(90deg,var(--accent-warning),#f97316);">
+                <span class="bar-fill-value">$4.90 PMPM</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d5">
+            <div class="bar-label">Enhanced PA + Step</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:61%;background:linear-gradient(90deg,var(--accent),var(--accent-bright));">
+                <span class="bar-fill-value">$3.80 PMPM</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d6">
+            <div class="bar-label">Clinical Pathway Only</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:50%;background:linear-gradient(90deg,var(--accent-success),var(--accent));">
+                <span class="bar-fill-value">$3.10 PMPM</span>
+              </div>
+            </div>
+          </div>
+          <p style="font-size:9.5px;color:var(--text-tertiary);margin-top:4px;">$2.40 PMPM swing between open access and managed = $288/member/year</p>
+        </div>
+
+        <div>
+          <div class="card card-green" style="margin-bottom:1rem;">
+            <div class="finding-title">CV Offsets: $1,200 PMPM Cumulative by Month 36</div>
+            <div class="finding-body">Claims-linked outcomes mapping SELECT endpoints to actual payer costs. ER visits –34%, hospitalizations –28%, specialist visits –15%. Offset materializes at month 18, reaches steady state month 36. Contract structures must reflect this lag — do not assume immediate ROI.</div>
+            <span class="confidence-badge medium">Medium — PRIMARY (claims-linked)</span>
+          </div>
+          <div class="card card-cyan" style="margin-bottom:1rem;">
+            <div class="finding-title">Productivity Offset: $3,200/Member/Year Hidden from Models <span class="source-unverified" title="Source: employer cohort study — requires further validation">†</span></div>
+            <div class="finding-body">Integrated employer health + disability + productivity data (N=4,200 treated, matched cohort). 2.4 fewer sick days, improved presenteeism. Employer-channel ROI positive within 12 months when productivity is included. Traditional pharmacoeconomic models systematically miss this.</div>
+            <span class="confidence-badge medium">Medium — TERTIARY (employer cohort, needs validation)</span>
+          </div>
+          <div class="card card-gold">
+            <div class="finding-title">Biosimilar Entry 2028–2030: 40–60% Cost Reduction Projected <span class="source-unverified" title="Source: historical biosimilar analysis — projection, not confirmed">†</span></div>
+            <div class="finding-body">Historical analysis across 8 biologic classes — average 52% price reduction within 3 years of first biosimilar entry. Current cost-effectiveness analyses significantly undervalue long-term GLP-1 coverage. First-mover payers benefit disproportionately from future price compression.</div>
+            <span class="confidence-badge low">Low — SECONDARY (historical analogy)</span>
+          </div>
+          <div class="source-list">
+            <strong>Sources:</strong> Actuarial model (2.8% eligible, 1.4% treated) | SELECT claims-linked | Employer cohort N=4,200 | Biosimilar historical analysis
+          </div>
+        </div>
+      </div>
+      <div class="dagger-footnote">† Productivity offset: employer cohort N=4,200, requires broader validation before actuarial use &nbsp;|&nbsp; † Biosimilar projection: historical analogy, not confirmed timeline</div>
+    </div>
+    <div class="slide-footer">
+      <span>Economic Modeler Agent | 5 findings | Confidence: 0.79</span>
+      <span>PRISM Intelligence</span>
+      <span>Slide 6 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 07 — MARKET DIMENSION -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-7">
+    <div class="slide-bg-glow" style="background:var(--accent-violet);top:-180px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-purple">Market</span> Growth Dimension — Market Strategist Agent</div>
+      <h2 class="slide-title anim d1">Market <span style="color:var(--accent-violet)">Dynamics</span></h2>
+      <p class="section-intro anim d2">Three high-confidence findings paint a clear picture: GLP-1 coverage has crossed from differentiator to table stakes. The S-curve inflection is behind us — payers are now competing on implementation quality, not coverage decision.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="toc-group-header">Formulary Adoption — S-Curve Trajectory</div>
+          <div class="card card-purple" style="margin-bottom:1rem;">
+            <div class="finding-title">23% Commercial Formulary Penetration — S-Curve Inflection Passed Q3 2025</div>
+            <div class="finding-body">Monthly tracking across 200+ commercial plans. Adoption rate: 0.5%/month in 2024, accelerating to 2.1%/month in H2 2025. Regional variation: Northeast 31%, Southeast 18%. Projection: 45–55% penetration by end of 2027.</div>
+            <span class="confidence-badge high">High — PRIMARY (formulary tracking N=200+)</span>
+          </div>
+
+          <div class="toc-group-header" style="margin-top:0.5rem;">Regional Penetration Snapshot</div>
+          <div class="state-grid">
+            <div class="state-item"><span class="state-name">Northeast</span><span class="state-impact" style="color:var(--accent-success);">31%</span></div>
+            <div class="state-item"><span class="state-name">Midwest</span><span class="state-impact">24%</span></div>
+            <div class="state-item"><span class="state-name">West</span><span class="state-impact">26%</span></div>
+            <div class="state-item"><span class="state-name">Southeast</span><span class="state-impact" style="color:var(--accent-warning);">18%</span></div>
+            <div class="state-item"><span class="state-name">Southwest</span><span class="state-impact" style="color:var(--accent-warning);">21%</span></div>
+            <div class="state-item"><span class="state-name">National</span><span class="state-impact" style="color:var(--accent-bright);">23%</span></div>
+          </div>
+
+          <div class="card card-cyan" style="margin-top:1rem;">
+            <div class="finding-title">3.2% Membership Growth Premium for Early Adopters</div>
+            <div class="finding-body">Regression analysis across 85 commercial plans (2024–2025). GLP-1 coverage status significant (p&lt;0.01) controlling for premium, network breadth, and Star Rating. Growth premium justifies near-term cost investment.</div>
+            <span class="confidence-badge medium">Medium — SECONDARY (regression N=85)</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="toc-group-header">Employer Demand Signal</div>
+          <div class="stat-block" style="text-align:center;margin-bottom:1.2rem;padding:20px;">
+            <span class="stat-eyebrow">Large Employers Requiring GLP-1 Coverage in RFPs</span>
+            <span class="stat-number positive" data-target="78">0</span><span class="stat-suffix">%</span>
+            <span class="stat-trend positive">Up from 34% in 2024</span>
+          </div>
+
+          <div class="card card-gold" style="margin-bottom:1rem;">
+            <div class="finding-title">GLP-1 Coverage Is Becoming Table Stakes in Plan Selection</div>
+            <div class="finding-body">Survey of 420 employer benefits decision-makers (Q4 2025). 65% rated GLP-1 coverage as 'important' or 'very important' in plan selection. Plans without coverage losing 12% of RFP competitions. Amazon Pharmacy entering direct-to-consumer GLP-1 channel creates additional competitive pressure.</div>
+            <span class="confidence-badge high">High — PRIMARY (employer survey N=420)</span>
+          </div>
+
+          <div class="toc-group-header">Competitive Signal Watch</div>
+          <div class="policy-box positive">
+            <h4>Two Major PBMs Announcing GLP-1 Preferred Formulary Positions for 2027</h4>
+            <p>PBM-level preferred positioning will alter rebate landscape significantly — plans without existing GLP-1 relationships may face unfavorable contract terms.</p>
+            <div class="impact impact-moderate">&#9650; MARKET SIGNAL | Act on contracting strategy in 2026 planning cycle</div>
+          </div>
+          <div class="source-list" style="margin-top:0.8rem;">
+            <strong>Sources:</strong> Monthly formulary tracking N=200+ plans | Employer survey N=420 | Regression analysis N=85 commercial plans
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Market Strategist Agent | 3 findings | Confidence: 0.87</span>
+      <span>PRISM Intelligence</span>
+      <span>Slide 7 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 08 — REGULATORY DIMENSION -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-8">
+    <div class="slide-bg-glow" style="background:var(--accent-warning);bottom:-200px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-gold">Regulatory</span> Compliance Dimension — Regulatory Navigator Agent</div>
+      <h2 class="slide-title anim d1">Regulatory <span style="color:var(--accent-warning)">Landscape</span></h2>
+      <p class="section-intro anim d2">Three findings converge on a decisive shift: regulatory environment is moving decisively toward mandated GLP-1 access at both federal and state levels. Payer discretion is narrowing.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="card card-gold" style="margin-bottom:1rem;">
+            <div class="finding-title">CMS Draft Guidance (Jan 2026): Mandatory Part D Coverage Likely by 2027</div>
+            <div class="finding-body">CMS-2026-0042 proposed rule analysis + congressional testimony by CMS Administrator + CBO scoring of parallel legislation (Treat and Reduce Obesity Act). Estimated 3.4M new Medicare beneficiaries newly eligible. Plans must prepare capacity, contracting, and clinical pathway infrastructure 12–18 months ahead.</div>
+            <span class="confidence-badge medium">Medium — PRIMARY (CMS filing)</span>
+          </div>
+
+          <div class="toc-group-header" style="margin-top:0.5rem;">State Parity Mandate Tracker</div>
+          <div class="state-grid">
+            <div class="state-item active"><span class="state-name">California</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item active"><span class="state-name">New York</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item active"><span class="state-name">Illinois</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item active"><span class="state-name">Colorado</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item active"><span class="state-name">Washington</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item active"><span class="state-name">Virginia</span><span class="state-impact" style="color:var(--accent-success);">Enacted</span></div>
+            <div class="state-item"><span class="state-name">Texas</span><span class="state-impact" style="color:var(--accent-warning);">Pending</span></div>
+            <div class="state-item"><span class="state-name">Florida</span><span class="state-impact" style="color:var(--accent-warning);">Pending</span></div>
+            <div class="state-item"><span class="state-name">Ohio</span><span class="state-impact" style="color:var(--accent-warning);">Pending</span></div>
+          </div>
+          <p style="font-size:9.5px;color:var(--text-tertiary);margin-top:4px;">12 states enacted, 8 pending — 20 total states with active or imminent parity requirements</p>
+        </div>
+
+        <div>
+          <div class="card card-accent" style="margin-bottom:1rem;">
+            <div class="finding-title">PA Burden: 4.2 Hrs/Request, 23% Denial Rate, 67% Overturn — $312/Request Total Cost</div>
+            <div class="finding-body">Multi-payer PA workflow analysis across 15 health plans. $312 per request including staff time, clinical review, and appeal processing. 67% overturn rate means most denials are eventually reversed — enormous waste. Electronic PA and clinical pathway automation would reduce cost 60–70%.</div>
+            <span class="confidence-badge high">High — PRIMARY (multi-payer workflow analysis)</span>
+          </div>
+
+          <div class="toc-group-header">State Parity Progress</div>
+          <div class="timeline-bar" style="margin:6px 0 3px;">
+            <div class="timeline-segment tl-done" style="width:60%;"></div>
+            <div class="timeline-segment tl-active" style="width:20%;"></div>
+            <div class="timeline-segment tl-pending" style="width:20%;"></div>
+          </div>
+          <p class="pipeline-caption">Enacted (12 states) → Pending (8 states) → No action (30 states)</p>
+
+          <div class="policy-box" style="margin-top:1rem;">
+            <h4>Regulatory Horizon Watch</h4>
+            <p>FDA accelerated review pathway for next-gen oral GLP-1 formulations; HHS anti-obesity strategy expected Q2 2026; FDA compounded GLP-1 guidance still pending.</p>
+            <div class="impact impact-moderate">&#9888; COMPLIANCE WATCH | Monitor Q2–Q3 2026 for HHS strategy release</div>
+          </div>
+
+          <div class="source-list" style="margin-top:0.8rem;">
+            <strong>Sources:</strong> CMS-2026-0042 | State legislative tracker 50 states | PA workflow analysis N=15 health plans | CBO scoring TROA
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Regulatory Navigator Agent | 3 findings | Confidence: 0.82</span>
+      <span>PRISM Intelligence</span>
+      <span>Slide 8 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 09 — ACCESS & EQUITY DIMENSION -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-9">
+    <div class="slide-bg-glow" style="background:var(--accent-error);top:-150px;left:-150px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-red">Access</span> Equity Dimension — Access &amp; Equity Analyst Agent</div>
+      <h2 class="slide-title anim d1">Access &amp; <span style="color:var(--accent-error)">Equity</span></h2>
+      <p class="section-intro anim d2">Three high-priority findings reveal that current GLP-1 access patterns are stratified by insurance type, race, and geography in ways that are both clinically harmful and regulatory-risk creating.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="card card-accent" style="margin-bottom:1rem;">
+            <div class="finding-title">Commercial Patients 4.7x More Likely to Receive GLP-1 Than Medicaid Enrollees</div>
+            <div class="finding-body">Nationwide claims analysis (N=2.1M eligible patients) comparing GLP-1 initiation rates by insurance type, race/ethnicity, geography, and income level. White patients 2.3x more likely than Black patients, controlling for BMI and comorbidities. Current access patterns are exacerbating health disparities.</div>
+            <span class="confidence-badge high">High — PRIMARY (claims N=2.1M)</span>
+          </div>
+
+          <div class="toc-group-header">Access Disparity by Dimension</div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Commercial Insured</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:100%;background:linear-gradient(90deg,var(--accent-success),var(--accent-bright));">
+                <span class="bar-fill-value">Index: 4.7x baseline</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Medicare</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:42%;background:linear-gradient(90deg,var(--accent),var(--accent-bright));">
+                <span class="bar-fill-value">Index: 2.0x</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d5">
+            <div class="bar-label">Medicaid</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:21%;background:linear-gradient(90deg,var(--accent-warning),var(--accent));">
+                <span class="bar-fill-value">Index: 1.0x (baseline)</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d6">
+            <div class="bar-label">Uninsured</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:8%;background:linear-gradient(90deg,var(--accent-error),var(--accent-warning));">
+                <span class="bar-fill-value">Index: 0.4x</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card card-blue" style="margin-bottom:1rem;">
+            <div class="finding-title">Out-of-Pocket Cost: #1 Barrier — 47% of Eligible Patients Cite It</div>
+            <div class="finding-body">Patient survey (N=8,400) across 12 health plans. Average monthly OOP: $250–$450 depending on plan design. OOP cost was #1 barrier, followed by prior auth complexity (23%) and provider awareness (15%). Plans offering $50/month copay caps see 3.2x higher initiation rates.</div>
+            <span class="confidence-badge high">High — PRIMARY (patient survey N=8,400)</span>
+          </div>
+
+          <div class="card card-gold" style="margin-bottom:1rem;">
+            <div class="finding-title">Rural Pharmacy Stockouts 34% vs. 8% Urban — Supply Chain Gap <span class="source-unverified" title="Source: NACDS survey — secondary source">†</span></div>
+            <div class="finding-body">NACDS pharmacy survey (N=1,200) tracking weekly over 6 months. Rural-urban stockout divide persists across all GLP-1 products. Mail-order and specialty pharmacy networks can partially bridge the gap — recommend rural supply chain strategy component in any coverage expansion plan.</div>
+            <span class="confidence-badge medium">Medium — SECONDARY (NACDS survey)</span>
+          </div>
+
+          <div class="policy-box positive">
+            <h4>3 Major Plans Launching GLP-1 Equity Pilot Programs Q2 2026</h4>
+            <p>CMS health equity initiative includes obesity treatment access metrics. Early equity program design creates reputational and regulatory goodwill ahead of potential mandate.</p>
+            <div class="impact impact-positive">&#9650; OPPORTUNITY | Equity programs create early compliance positioning</div>
+          </div>
+
+          <div class="source-list" style="margin-top:0.8rem;">
+            <strong>Sources:</strong> Claims analysis N=2.1M | Patient survey N=8,400 | NACDS pharmacy survey N=1,200
+          </div>
+        </div>
+      </div>
+      <div class="dagger-footnote">† Source: NACDS pharmacy supply survey — secondary source, not independently verified against manufacturer distribution data</div>
+    </div>
+    <div class="slide-footer">
+      <span>Access &amp; Equity Analyst Agent | 3 findings | Confidence: 0.84</span>
+      <span>PRISM Intelligence</span>
+      <span>Slide 9 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 10 — EMERGENT INSIGHTS OVERVIEW -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-10">
+    <div class="slide-bg-glow" style="background:var(--accent-violet);top:-200px;right:-200px;"></div>
+    <div class="slide-bg-glow" style="background:var(--accent-bright);bottom:-250px;left:-150px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-cyan">Emergence</span> Cross-Agent Pattern Detection — 3 Novel Insights</div>
+      <h2 class="slide-title anim d1">Emergent <span style="color:var(--accent-bright)">Intelligence</span></h2>
+      <p class="section-intro anim d2">Three insights that no single agent could produce alone — visible only when clinical outcomes data, economic models, market dynamics, regulatory burden, and equity barriers are analyzed simultaneously.</p>
+
+      <div class="grid-3 anim d3">
+        <div class="emergence-card">
+          <h4>01. Shadow Rationing Effect</h4>
+          <p>Prior auth complexity + supply constraints = artificial demand suppression masking true market size by <strong class="highlight">30–40%</strong>. Emerges from overlaying Regulatory burden data on Market penetration curves and Access barriers simultaneously.</p>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="tag tag-purple" style="font-size:9px;">Market Strategist</span>
+            <span class="tag tag-gold" style="font-size:9px;">Regulatory Navigator</span>
+            <span class="tag tag-red" style="font-size:9px;">Access Analyst</span>
+          </div>
+          <div style="margin-top:8px;font-size:9px;color:var(--accent-bright);">Novelty: ●●●●● | Actionability: ●●●●●</div>
+        </div>
+        <div class="emergence-card">
+          <h4>02. Hidden Productivity ROI</h4>
+          <p>$3,200/member/year productivity offset from reduced absenteeism and presenteeism is systematically excluded from all published pharmacoeconomic models. Makes employer-channel ROI positive within <strong class="highlight">12 months</strong> — well ahead of the clinical offset timeline.</p>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="tag tag-cyan" style="font-size:9px;">Clinical Analyst</span>
+            <span class="tag tag-green" style="font-size:9px;">Economic Modeler</span>
+            <span class="tag tag-purple" style="font-size:9px;">Market Strategist</span>
+          </div>
+          <div style="margin-top:8px;font-size:9px;color:var(--accent-bright);">Novelty: ●●●●○ | Surprise: ●●●●●</div>
+        </div>
+        <div class="emergence-card">
+          <h4>03. Biosimilar First-Mover Window</h4>
+          <p>2026–2028 is a strategic window: payers establishing comprehensive GLP-1 pathways now will lock in rebate structures and clinical protocols that become <strong class="highlight">defensible moats</strong> against late adopters when biosimilar entry compresses costs in 2028–2030.</p>
+          <div style="margin-top:10px;display:flex;gap:6px;flex-wrap:wrap;">
+            <span class="tag tag-purple" style="font-size:9px;">Market Strategist</span>
+            <span class="tag tag-gold" style="font-size:9px;">Regulatory Navigator</span>
+            <span class="tag tag-green" style="font-size:9px;">Economic Modeler</span>
+          </div>
+          <div style="margin-top:8px;font-size:9px;color:var(--accent-bright);">Actionability: ●●●●● | Grounding: ●●●●○</div>
+        </div>
+      </div>
+
+      <div class="emergent-why anim d5">
+        <div class="emergent-why-label">Why Multi-Agent Analysis Is Required for These Insights</div>
+        <div class="finding-body">Each of the three emergent insights requires data that lives in different analytical domains. Shadow rationing requires regulatory burden rates AND market penetration curves AND patient access barriers — no single agent holds all three. The productivity ROI requires clinical outcomes, economic modeling frameworks, AND employer channel market intelligence simultaneously. The biosimilar window requires patent landscape mapping, economic rebate modeling, AND competitive dynamics — three independent analytical threads that only reveal a strategic opportunity when overlaid on the same timeline.</div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>PRISM Intelligence — Emergence Detection Layer</span>
+      <span>Algorithms: cross_agent_theme_mining | gap_triangulation | structural_pattern_recognition</span>
+      <span>Slide 10 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 11 — EMERGENT INSIGHT 1: SHADOW RATIONING -->
+  <!-- ============================================================ -->
+  <section class="slide emergent-slide" id="slide-11">
+    <div class="slide-bg-glow" style="background:var(--accent-error);top:-180px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="emergent-number anim">01</div>
+      <div class="emergent-content">
+        <div class="eyebrow anim"><span class="tag tag-cyan" style="letter-spacing:0.15em;">EMERGENT INSIGHT 01</span> cross_agent_theme_mining</div>
+        <h2 class="slide-title anim d1">Shadow Rationing Through<br><span style="color:var(--accent-bright)">Prior Authorization Complexity</span></h2>
+        <p class="slide-subtitle anim d2">The true GLP-1 market is 30–40% larger than penetration data suggests — prior auth complexity and supply constraints create a hidden demand suppression mechanism that is invisible to any single analytical lens.</p>
+
+        <div class="grid-3 anim d3">
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">Demand Suppressed</span>
+            <span class="stat-number negative" data-target="35">0</span><span class="stat-suffix negative">%</span>
+            <span class="stat-trend negative">est. range 30–40%</span>
+          </div>
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">PA Overturn Rate</span>
+            <span class="stat-number" data-target="67">0</span><span class="stat-suffix">%</span>
+            <span class="stat-trend negative">denials that are reversed</span>
+          </div>
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">Staff Hrs / PA Request</span>
+            <span class="stat-number negative" data-target="4">0</span><span class="stat-suffix negative">.2</span>
+            <span class="stat-trend negative">$312 total admin cost</span>
+          </div>
+        </div>
+
+        <div class="grid-2 anim d4" style="margin-top:1rem;">
+          <div class="card card-accent">
+            <div class="finding-title">The Shadow Rationing Mechanism</div>
+            <div class="finding-body">PA complexity discourages prescribers from initiating GLP-1 prescriptions, patients from pursuing denied claims, and plans from approving borderline-eligible patients. The 67% overturn rate means the clinical criteria are being applied overly restrictively — most denials are clinically unjustified. This is not a utilization management win; it is an administrative tax on appropriate care.</div>
+          </div>
+          <div class="card card-gold">
+            <div class="finding-title">Why This Matters Strategically</div>
+            <div class="finding-body">If true demand is 30–40% higher than penetration data suggests, the market size, competitive risk, and regulatory exposure are all being underestimated. Plans that streamline PA (digital PA, clinical criteria automation) will see demand normalization — and must model the budget impact of unleashing suppressed demand before states or CMS mandate simplification.</div>
+          </div>
+        </div>
+
+        <div class="emergent-why anim d5">
+          <div class="emergent-why-label">Why Only Multi-Agent Analysis Finds This</div>
+          <div class="finding-body">The Regulatory Navigator sees PA denial rates and overturn data. The Market Strategist sees penetration curves that plateau below expected levels. The Access &amp; Equity Analyst sees patient survey data showing PA complexity as the #2 barrier to initiation. No single agent holds all three data streams — shadow rationing only becomes visible when PA burden data is overlaid on market penetration models AND patient access barriers simultaneously. The gap between expected and actual market penetration is the signature of the phenomenon.</div>
+        </div>
+
+        <div class="source-list anim d6">
+          <strong>Evidence:</strong>
+          <a href="#slide-17">PBM formulary restriction analysis</a> |
+          <a href="#slide-17">CMS prior auth burden study 2025</a> |
+          <a href="#slide-17">Patient access survey N=12,400</a> |
+          <a href="#slide-17">PA workflow analysis N=15 health plans</a>
+        </div>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Market Strategist + Regulatory Navigator + Access Analyst | Novelty: 5/5 | Actionability: 5/5</span>
+      <span>PRISM Intelligence — Emergence Layer</span>
+      <span>Slide 11 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 12 — EMERGENT INSIGHT 2: HIDDEN PRODUCTIVITY ROI -->
+  <!-- ============================================================ -->
+  <section class="slide emergent-slide" id="slide-12">
+    <div class="slide-bg-glow" style="background:var(--accent-success);top:-180px;left:-180px;"></div>
+    <div class="slide-inner">
+      <div class="emergent-number anim">02</div>
+      <div class="emergent-content">
+        <div class="eyebrow anim"><span class="tag tag-green" style="letter-spacing:0.15em;">EMERGENT INSIGHT 02</span> gap_triangulation</div>
+        <h2 class="slide-title anim d1">Hidden Productivity Offset:<br><span style="color:var(--accent-success)">$3,200/Member/Year</span> Ignored by All Models</h2>
+        <p class="slide-subtitle anim d2">Traditional pharmacoeconomic frameworks evaluate GLP-1 ROI through a clinical-only lens. A complete employer-channel value model — integrating absenteeism, presenteeism, and disability costs — reveals positive ROI well ahead of the cardiovascular offset timeline.</p>
+
+        <div class="grid-3 anim d3">
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">Annual Productivity Offset</span>
+            <span class="stat-number positive" data-target="3200">0</span>
+            <span class="stat-trend positive">$/member/year</span>
+          </div>
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">Fewer Sick Days/Year</span>
+            <span class="stat-number positive" data-target="2">0</span><span class="stat-suffix positive">.4</span>
+            <span class="stat-trend positive">vs. matched controls</span>
+          </div>
+          <div class="stat-block" style="text-align:center;padding:16px 10px;">
+            <span class="stat-eyebrow">Employer ROI Breakeven</span>
+            <span class="stat-number positive" data-target="12">0</span><span class="stat-suffix positive">mo</span>
+            <span class="stat-trend positive">vs. 30mo clinical only</span>
+          </div>
+        </div>
+
+        <div class="grid-2 anim d4" style="margin-top:1rem;">
+          <div class="card card-green">
+            <div class="finding-title">The Complete Employer ROI Model <span class="source-unverified" title="Source: employer cohort N=4,200 — requires broader validation">†</span></div>
+            <div class="finding-body">Traditional model: pharmacy cost vs. cardiovascular offsets (positive ROI at month 30). Complete model adds: 2.4 fewer sick days ($800/member), presenteeism improvement ($1,400/member), short-term disability reduction ($1,000/member). Sum: $3,200/member/year productivity offset — employer ROI positive at month 12 before any clinical offsets materialize.</div>
+            <span class="confidence-badge medium">Medium — Employer cohort N=4,200 (needs validation)</span>
+          </div>
+          <div class="card card-cyan">
+            <div class="finding-title">Strategic Implication for Employer-Channel Positioning</div>
+            <div class="finding-body">Self-insured employers paying both health costs AND disability/productivity costs have a fundamentally different ROI calculus than fully-insured plans. Payers competing for employer business should market GLP-1 coverage using total cost of ownership models — not just healthcare cost models. This reframes the conversation from cost center to investment.</div>
+          </div>
+        </div>
+
+        <div class="emergent-why anim d5">
+          <div class="emergent-why-label">Why Only Multi-Agent Analysis Finds This</div>
+          <div class="finding-body">The Clinical Analyst provides outcomes data (weight reduction, CV events) but does not model workplace productivity. The Economic Modeler has the actuarial framework but lacks access to employer disability and productivity databases. The Market Strategist identifies the employer channel as the high-growth segment but does not model the underlying economics. The full ROI picture — which makes the employer-channel case compelling — requires all three analytical threads simultaneously. No individual agent's brief contains this insight.</div>
+        </div>
+
+        <div class="source-list anim d6">
+          <strong>Evidence (note: employer cohort requires broader validation):</strong>
+          <a href="#slide-17">SELECT cardiovascular outcomes trial</a> |
+          <a href="#slide-17">Employer health benefits survey 2025</a> |
+          <a href="#slide-17">Workplace productivity meta-analysis k=14 studies</a> |
+          <a href="#slide-17">Matched employer cohort N=4,200 treated members</a>
+        </div>
+      </div>
+    </div>
+    <div class="dagger-footnote">† Productivity offset: employer cohort N=4,200 — requires broader validation; treat as directional signal pending larger study</div>
+    <div class="slide-footer">
+      <span>Clinical Analyst + Economic Modeler + Market Strategist | Novelty: 4/5 | Surprise: 5/5</span>
+      <span>PRISM Intelligence — Emergence Layer</span>
+      <span>Slide 12 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 13 — EMERGENT INSIGHT 3: BIOSIMILAR STRATEGIC WINDOW -->
+  <!-- ============================================================ -->
+  <section class="slide emergent-slide" id="slide-13">
+    <div class="slide-bg-glow" style="background:var(--accent);top:-180px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="emergent-number anim">03</div>
+      <div class="emergent-content">
+        <div class="eyebrow anim"><span class="tag tag-blue" style="letter-spacing:0.15em;">EMERGENT INSIGHT 03</span> structural_pattern_recognition</div>
+        <h2 class="slide-title anim d1">Biosimilar Entry Creates a<br><span style="color:var(--accent)">2026–2028 Strategic Window</span></h2>
+        <p class="slide-subtitle anim d2">First-mover payers who establish comprehensive GLP-1 coverage now will lock in rebate structures and clinical pathways that become defensible competitive moats once biosimilar entry compresses prices and eliminates differentiation.</p>
+
+        <div class="anim d3">
+          <div class="toc-group-header">Strategic Timeline — The Biosimilar Window</div>
+          <div class="timeline-bar" style="margin:8px 0 4px;height:10px;">
+            <div class="timeline-segment tl-done" style="width:35%;"></div>
+            <div class="timeline-segment tl-active" style="width:30%;"></div>
+            <div class="timeline-segment tl-pending" style="width:35%;"></div>
+          </div>
+          <p class="pipeline-caption">2024–2025: Early adoption window (8%→23% penetration) → 2026–2028: Strategic consolidation window (NOW) → 2028–2030: Biosimilar entry, price compression, late-mover disadvantage</p>
+        </div>
+
+        <div class="grid-2 anim d4" style="margin-top:1rem;">
+          <div class="card card-blue">
+            <div class="finding-title">Why the Window Closes at Biosimilar Entry <span class="source-unverified" title="Source: historical biosimilar analogy — not confirmed for GLP-1 class specifically">†</span></div>
+            <div class="finding-body">Historical analysis across 8 biologic classes (average 52% price reduction within 3 years of first biosimilar). Once prices compress, all payers will cover GLP-1s regardless. The rebate contracts negotiated now (when branded volume is concentrated) will be locked in. Clinical pathways established now will have 2–4 years of outcome data — defensible against competitors entering later.</div>
+            <span class="confidence-badge medium">Medium — Historical analogy (adalimumab) | Structural pattern</span>
+          </div>
+          <div class="card card-purple">
+            <div class="finding-title">Three Moats Payers Can Build Now</div>
+            <div class="finding-body">
+              <strong>1. Rebate lock-in:</strong> Negotiate multi-year preferred contracts while branded manufacturers need volume concentration (2026–2027 contract cycles).<br><br>
+              <strong>2. Clinical pathway advantage:</strong> Establish evidence-based step therapy and monitoring protocols now — 2 years of outcomes data creates defensible quality differentiation.<br><br>
+              <strong>3. Member experience:</strong> Plans with seamless digital PA and adherence support will retain GLP-1 members who actively choose plans for this benefit.
+            </div>
+          </div>
+        </div>
+
+        <div class="emergent-why anim d5">
+          <div class="emergent-why-label">Why Only Multi-Agent Analysis Finds This</div>
+          <div class="finding-body">The Market Strategist sees the competitive dynamics of adoption curves. The Regulatory Navigator maps the patent landscape and biosimilar regulatory pathways. The Economic Modeler quantifies the rebate lock-in effects and price compression timelines. The strategic window only becomes visible when all three timelines — market adoption, patent expiry, and economic modeling — are overlaid simultaneously. Each individual agent brief describes a component; only synthesis reveals the urgency of the 2026–2028 window.</div>
+        </div>
+
+        <div class="source-list anim d6">
+          <strong>Evidence:</strong>
+          <a href="#slide-17">Patent cliff analysis — semaglutide/tirzepatide</a> |
+          <a href="#slide-17">Historical biosimilar adoption curves (adalimumab case study)</a> |
+          <a href="#slide-17">PBM contract structure analysis</a>
+        </div>
+      </div>
+    </div>
+    <div class="dagger-footnote">† Biosimilar window timeline: historical analogy based on adalimumab experience — GLP-1 class dynamics may differ; treat as directional framework</div>
+    <div class="slide-footer">
+      <span>Market Strategist + Regulatory Navigator + Economic Modeler | Actionability: 5/5 | Grounding: 4/5</span>
+      <span>PRISM Intelligence — Emergence Layer</span>
+      <span>Slide 13 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 14 — TENSION: BUDGET IMPACT VS. LONG-TERM OFFSETS -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-14">
+    <div class="slide-bg-glow" style="background:var(--accent-warning);bottom:-200px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-gold">Tension</span> Predictive Disagreement — Budget Horizon Framing</div>
+      <h2 class="slide-title anim d1">Short-Term Costs vs.<br><span style="color:var(--accent-warning)">Long-Term Offsets</span></h2>
+      <p class="section-intro anim d2">Both positions are analytically valid — they are measuring the same phenomenon across different time horizons. The resolution is not choosing a side; it is designing coverage policy that is calibrated to each horizon.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-success);">&#9650; POSITION A — Clinical Analyst &amp; Market Strategist</div>
+          <div class="card card-green" style="margin-bottom:0.8rem;">
+            <div class="finding-title">GLP-1 offsets justify premium pricing within 18–24 months</div>
+            <div class="finding-body">SELECT trial: 20% MACE reduction. Real-world claims: 34% reduction in ER visits. Employer ROI models project positive returns by month 22. CV offset of $8,400 per avoided event is quantifiable. The 3.2% membership growth premium from coverage adds a competitive offset not captured in traditional budget models.</div>
+            <span class="confidence-badge high">High — PRIMARY: SELECT trial, claims data</span>
+          </div>
+          <div class="policy-box positive">
+            <h4>Key evidence anchors</h4>
+            <p>SELECT trial HR 0.80 (CI 0.72–0.90) | ER visits –34% | Hospitalization –28% | Membership growth premium 3.2%</p>
+            <div class="impact impact-positive">&#9650; POSITIVE ROI | Target: high-CV-risk population by month 18</div>
+          </div>
+        </div>
+
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-error);">&#9660; POSITION B — Economic Modeler &amp; Access Analyst</div>
+          <div class="card card-accent" style="margin-bottom:0.8rem;">
+            <div class="finding-title">Net budget impact remains negative for 36+ months at population scale</div>
+            <div class="finding-body">Budget impact model: –$4.2M per 10,000 lives in Year 1. Dose escalation increases per-patient costs 40% by month 12 (45% of patients). Only 62% of initiators remain on therapy at 12 months — discontinuation erodes population-level benefits. Full eligibility population analysis makes net positive timeline 36+ months.</div>
+            <span class="confidence-badge medium">Medium — SECONDARY: actuarial model</span>
+          </div>
+          <div class="policy-box">
+            <h4>Key evidence anchors</h4>
+            <p>–$4.2M Year 1 | –$1.8M Year 2 | +$0.6M Year 3 | 38% discontinuation at 12mo | 45% dose escalation</p>
+            <div class="impact impact-severe">&#9660; NEGATIVE 36+ MONTHS | Full eligible population; unmanaged utilization</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-cyan anim d5" style="margin-top:1.5rem;">
+        <div class="finding-title">&#9670; SYNTHESIS RESOLUTION — Phased Coverage Strategy</div>
+        <div class="finding-body">Both positions are valid under different assumptions. The resolution is a phased approach: <strong>Phase 1 (Now):</strong> Cover high-CV-risk populations (established CVD, BMI ≥30 + diabetes) — positive ROI by month 18, limited population size controls budget exposure. <strong>Phase 2 (Month 18–24):</strong> Expand to broader obesity indication as cardiovascular offset data matures and CMS mandate timeline clarifies. <strong>Phase 3 (Post-biosimilar):</strong> Broad formulary access once price compression makes universal coverage economically straightforward. This sequencing captures the membership growth premium while managing near-term budget exposure.</div>
+        <span class="confidence-badge high">High — Synthesis recommendation</span>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Clinical Analyst + Economic Modeler + Market Strategist + Access Analyst | Tension: Predictive</span>
+      <span>PRISM Intelligence — Tension Layer</span>
+      <span>Slide 14 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 15 — TENSION: RAPID ADOPTION VS. UTILIZATION MANAGEMENT -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-15">
+    <div class="slide-bg-glow" style="background:var(--accent-violet);top:-180px;left:-150px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-purple">Tension</span> Values-Based Disagreement — Access vs. Fiscal Sustainability</div>
+      <h2 class="slide-title anim d1">Rapid Access vs.<br><span style="color:var(--accent-violet)">Utilization Controls</span></h2>
+      <p class="section-intro anim d2">This tension is not resolvable by data alone — it involves a values question about the appropriate role of utilization management. The data informs, but the plan's philosophy determines which side of the tradeoff to accept.</p>
+
+      <div class="grid-2 anim d3">
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-success);">&#9650; POSITION A — Market Strategist</div>
+          <div class="card card-green" style="margin-bottom:0.8rem;">
+            <div class="finding-title">Broad access accelerates population health and competitive positioning</div>
+            <div class="finding-body">78% of large employers now expect GLP-1 coverage in RFPs. Plans without coverage losing 12% of RFP competitions. Early adopter plans show 3.2% membership growth premium. Population health benefits are most powerful when coverage is broad — selective coverage limits the preventive value at scale.</div>
+          </div>
+          <div class="toc-group-header" style="margin-top:0.5rem;">Competitive Pressure Signals</div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">Employers Requiring Coverage</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:78%;background:linear-gradient(90deg,var(--accent-success),var(--accent-bright));">
+                <span class="bar-fill-value">78%</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d4">
+            <div class="bar-label">RFP Loss Rate w/o Coverage</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:12%;background:linear-gradient(90deg,var(--accent-warning),var(--accent));">
+                <span class="bar-fill-value">12%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-error);">&#9660; POSITION B — Regulatory Navigator &amp; Economic Modeler</div>
+          <div class="card card-accent" style="margin-bottom:0.8rem;">
+            <div class="finding-title">Unrestricted access creates unsustainable pharmacy spend growth</div>
+            <div class="finding-body">States with minimal PA requirements saw 340% utilization spike in 2025. Average GLP-1 spend per treated member: $12,400/year. Unmanaged utilization projects to consume 8% of total pharmacy budget by 2027. Without clinical criteria, dose escalation and persistence management are impossible to optimize.</div>
+          </div>
+          <div class="toc-group-header" style="margin-top:0.5rem;">Spend Risk Without Management</div>
+          <div class="bar-row anim d5">
+            <div class="bar-label">2025 Unmanaged Utilization</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:100%;background:linear-gradient(90deg,var(--accent-error),#f97316);">
+                <span class="bar-fill-value">+340% utilization spike (minimal-PA states)</span>
+              </div>
+            </div>
+          </div>
+          <div class="bar-row anim d6">
+            <div class="bar-label">Projected Pharmacy Budget % (2027)</div>
+            <div class="bar-track">
+              <div class="bar-fill" style="--fill-pct:80%;background:linear-gradient(90deg,var(--accent-warning),var(--accent-error));">
+                <span class="bar-fill-value">8% of total pharmacy budget</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card card-purple anim d7" style="margin-top:1.5rem;">
+        <div class="finding-title">&#9670; SYNTHESIS RESOLUTION — Smart Prior Authorization</div>
+        <div class="finding-body">Streamlined digital PA with transparent clinical criteria (BMI ≥30 OR BMI ≥27 with ≥1 comorbidity) reduces approval time to &lt;24 hours while maintaining appropriate utilization controls. This approach: eliminates 67% of denials that are clinically unjustifiable; reduces $312/request PA admin cost by 60–70% through automation; satisfies both the access imperative (fast, fair, predictable) and the fiscal imperative (criteria-based, data-driven). The key distinction: smart PA manages appropriate use; dumb PA rations appropriate care.</div>
+        <span class="confidence-badge high">High — Multi-agent consensus</span>
+      </div>
+    </div>
+    <div class="slide-footer">
+      <span>Market Strategist + Regulatory Navigator + Economic Modeler | Tension: Values-Based</span>
+      <span>PRISM Intelligence — Tension Layer</span>
+      <span>Slide 15 of 18</span>
+    </div>
+  </section>
+
+  <!-- ============================================================ -->
+  <!-- SLIDE 16 — STRATEGIC IMPLICATIONS -->
+  <!-- ============================================================ -->
+  <section class="slide" id="slide-16">
+    <div class="slide-bg-glow" style="background:var(--accent-bright);top:-200px;right:-180px;"></div>
+    <div class="slide-inner">
+      <div class="eyebrow anim"><span class="tag tag-cyan">Strategy</span> Actionable Recommendations — 2026 Planning Horizon</div>
+      <h2 class="slide-title anim d1">Strategic <span style="color:var(--accent-bright)">Implications</span></h2>
+      <p class="section-intro anim d2">Five actions, sequenced by urgency, mapped against the biosimilar window timeline. The strategic imperative: establish GLP-1 infrastructure while the first-mover window remains open.</p>
+
+      <div class="anim d2">
+        <div class="toc-group-header">Action Roadmap — 2026–2030 Horizon</div>
+        <div class="timeline-bar" style="margin:6px 0 3px;height:8px;">
+          <div class="timeline-segment tl-done" style="width:30%;"></div>
+          <div class="timeline-segment tl-active" style="width:35%;"></div>
+          <div class="timeline-segment tl-pending" style="width:35%;"></div>
+        </div>
+        <p class="pipeline-caption">NOW (Q1–Q3 2026): Foundation actions → MID-TERM (2026–2027): Optimization actions → LONG-TERM (2028+): Biosimilar transition</p>
+      </div>
+
+      <div class="grid-3 anim d3" style="margin-top:1rem;">
+        <div>
+          <div class="toc-group-header" style="color:var(--accent-error);">&#9733; URGENT — Act Now</div>
+          <div class
