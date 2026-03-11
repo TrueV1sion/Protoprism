@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { encrypt } from "@/lib/crypto";
 
 export async function POST(req: NextRequest) {
@@ -14,11 +14,7 @@ export async function POST(req: NextRequest) {
 
   const encryptedKey = encrypt(key);
 
-  await prisma.apiKey.upsert({
-    where: { provider },
-    update: { encryptedKey },
-    create: { provider, encryptedKey },
-  });
+  await db.apiKey.upsert(provider, encryptedKey);
 
   return NextResponse.json({ ok: true });
 }

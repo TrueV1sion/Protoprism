@@ -21,12 +21,16 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import CoachMarkProvider, { useCoachMarkPhase } from "@/components/onboarding/CoachMarkProvider";
 import PhaseTransition from "@/components/PhaseTransition";
 import PipelineStepper from "@/components/PipelineStepper";
+import { useOnboarding } from "@/hooks/use-onboarding";
 
-function PhaseSync({ phase }: { phase: Phase }) {
-  const { setCurrentPhase } = useCoachMarkPhase();
+function PhaseSync({ phase, isError }: { phase: Phase; isError: boolean }) {
+  const { setCurrentPhase, setIsError } = useCoachMarkPhase();
   useEffect(() => {
     setCurrentPhase(phase);
   }, [phase, setCurrentPhase]);
+  useEffect(() => {
+    setIsError(isError);
+  }, [isError, setIsError]);
   return null;
 }
 
@@ -35,22 +39,14 @@ export default function Home() {
   const [phase, setPhase] = useState<Phase>("input");
   const [selectedDeck, setSelectedDeck] = useState<DeckMeta | null>(null);
   const [blueprintApproved, setBlueprintApproved] = useState(false);
-  const [showOnboarding, setShowOnboarding] = useState(false);
-  const [onboardingChecked, setOnboardingChecked] = useState(false);
-  const [hasCompletedTour, setHasCompletedTour] = useState<boolean | undefined>(undefined);
+
+  const [onboardingDismissedLocally, setOnboardingDismissedLocally] = useState(false);
 
   const stream = useResearchStream();
+  const onboarding = useOnboarding();
 
-  useEffect(() => {
-    fetch("/api/onboarding/status")
-      .then((r) => r.json())
-      .then((data) => {
-        setShowOnboarding(!data.onboardingDismissed);
-        setHasCompletedTour(data.hasCompletedTour ?? false);
-        setOnboardingChecked(true);
-      })
-      .catch(() => setOnboardingChecked(true));
-  }, []);
+  const showOnboarding = onboarding.showWizard && !onboardingDismissedLocally;
+  const onboardingChecked = !onboarding.loading;
 
   // ─── Start live analysis ──────────────────────────
   const handleSubmitLive = useCallback((e: React.FormEvent) => {
@@ -156,7 +152,7 @@ export default function Home() {
 
   if (showOnboarding) {
     return (
-      <OnboardingWizard onComplete={() => setShowOnboarding(false)} />
+      <OnboardingWizard onComplete={() => setOnboardingDismissedLocally(true)} />
     );
   }
 
@@ -284,8 +280,8 @@ export default function Home() {
   const showStepper = ["executing", "blueprint", "triage", "synthesis", "complete"].includes(effectivePhase);
 
   return (
-    <CoachMarkProvider hasCompletedTour={hasCompletedTour}>
-      <PhaseSync phase={effectivePhase} />
+    <CoachMarkProvider hasCompletedTour={onboarding.status?.hasCompletedTour ?? true}>
+      <PhaseSync phase={effectivePhase} isError={stream.phase === "error"} />
       {showStepper && <PipelineStepper phase={effectivePhase} streamPhase={stream.phase} />}
       <PhaseTransition phaseKey={effectivePhase}>
         {phaseContent}

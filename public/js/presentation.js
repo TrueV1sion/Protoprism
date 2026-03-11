@@ -82,6 +82,23 @@ window.addEventListener('load',function(){
   setTimeout(()=>{document.getElementById('navHint').classList.remove('show');},4000);
 });
 
+// ANIMATED COUNTER — animates .stat-number[data-target] from 0 to target
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  if (isNaN(target)) return;
+  const suffix = el.dataset.suffix || '';
+  const prefix = el.dataset.prefix || '';
+  const start = performance.now();
+  const duration = 2000;
+  function update(now) {
+    const progress = Math.min((now - start) / duration, 1);
+    const eased = 1 - Math.pow(1 - progress, 4); // ease-out quart
+    el.textContent = prefix + Math.round(target * eased).toLocaleString() + suffix;
+    if (progress < 1) requestAnimationFrame(update);
+  }
+  requestAnimationFrame(update);
+}
+
 // INTERSECTION OBSERVER FOR ANIMATIONS
 const animObserver = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
@@ -93,6 +110,13 @@ const animObserver = new IntersectionObserver((entries) => {
       });
       entry.target.querySelectorAll('.bar-chart, .line-chart, .donut-chart, .sparkline').forEach(chart => {
         chart.classList.add('is-visible');
+      });
+      // Animated counters — fire once per element
+      entry.target.querySelectorAll('.stat-number[data-target]').forEach(el => {
+        if (!el.dataset.animated) {
+          el.dataset.animated = 'true';
+          animateCounter(el);
+        }
       });
     }
   });

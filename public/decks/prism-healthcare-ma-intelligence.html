@@ -565,5 +565,6 @@ let tx=0;document.addEventListener('touchstart',e=>tx=e.touches[0].clientX);
 document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].clientX;if(Math.abs(d)>50)go(d>0?1:-1)});
 rd();
 </script>
+<script src="/js/presentation.js" defer></script>
 </body>
 </html>

@@ -58,7 +58,11 @@ export default function CompletePhase({
                                 PIPELINE ERROR
                             </div>
                             <h2 className="text-2xl md:text-3xl font-bold text-white">Analysis Encountered an Error</h2>
-                            <p className="text-sm text-red-400/80">{errorMessage}</p>
+                            <p className="text-sm text-red-400/80 max-w-xl mx-auto">
+                                {errorMessage && errorMessage.length > 200
+                                    ? errorMessage.slice(0, 200) + "…"
+                                    : errorMessage}
+                            </p>
                         </>
                     ) : (
                         <>
@@ -216,25 +220,32 @@ export default function CompletePhase({
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="flex items-center justify-center gap-4 pt-4 pb-8">
                     <button
                         onClick={onNewAnalysis}
-                        className="px-6 py-2.5 rounded-lg text-sm text-prism-muted border border-white/10 hover:border-white/20 hover:text-white transition-colors"
+                        className={`px-6 py-2.5 rounded-lg text-sm border transition-colors ${hasError
+                            ? "text-white border-prism-sky/30 bg-prism-sky/10 hover:bg-prism-sky/20"
+                            : "text-prism-muted border-white/10 hover:border-white/20 hover:text-white"
+                        }`}
                     >
-                        New Analysis
+                        {hasError ? "Try Again" : "New Analysis"}
                     </button>
-                    <button
-                        onClick={onViewBrief}
-                        data-tour-id="tour-view-brief"
-                        className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium bg-prism-sky text-prism-bg shadow-[0_0_20px_rgba(89,221,253,0.25)] hover:bg-white transition-all duration-300"
-                    >
-                        View Cinematic Brief
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
-                    <button
-                        onClick={onBrowseLibrary}
-                        className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm text-prism-muted border border-white/10 hover:border-prism-sky/30 hover:text-prism-sky transition-colors"
-                    >
-                        <Library className="w-4 h-4" />
-                        Browse Library
-                    </button>
+                    {!hasError && (
+                        <button
+                            onClick={onViewBrief}
+                            data-tour-id="tour-view-brief"
+                            className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium bg-prism-sky text-prism-bg shadow-[0_0_20px_rgba(89,221,253,0.25)] hover:bg-white transition-all duration-300"
+                        >
+                            View Cinematic Brief
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    )}
+                    {!hasError && (
+                        <button
+                            onClick={onBrowseLibrary}
+                            className="flex items-center gap-2 px-6 py-2.5 rounded-lg text-sm text-prism-muted border border-white/10 hover:border-prism-sky/30 hover:text-prism-sky transition-colors"
+                        >
+                            <Library className="w-4 h-4" />
+                            Browse Library
+                        </button>
+                    )}
                 </motion.div>
             </div>
         </div>

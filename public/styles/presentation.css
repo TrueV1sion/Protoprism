@@ -1022,9 +1022,182 @@
       }
     }
 
+    /* ─── Threat Meter ─────────────────────────────── */
+    .threat-meter { display: flex; gap: 2px; align-items: center; }
+    .threat-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.1); }
+    .threat-dot.active-red { background: var(--accent-error); }
+    .threat-dot.active-orange { background: #f97316; }
+    .threat-dot.active-yellow { background: var(--accent-warning); }
+    .threat-dot.active-green { background: var(--accent-success); }
+    .threat-dot.active-blue { background: var(--accent); }
+
+    /* ─── State Grid ──────────────────────────────── */
+    .state-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-top: 8px; }
+    .state-item {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      border-radius: 8px; padding: 7px 10px; font-size: 10.5px;
+    }
+    .state-item .state-name { font-weight: 600; color: var(--text-primary); }
+    .state-item .state-impact { color: var(--accent); font-weight: 700; }
+
+    /* ─── Timeline Bar (Pipeline Progress) ────────── */
+    .timeline-bar {
+      display: flex; height: 6px; border-radius: 3px; overflow: hidden;
+      margin-top: 5px; background: rgba(255,255,255,0.05);
+    }
+    .timeline-segment { height: 100%; }
+    .tl-done { background: var(--accent-success); }
+    .tl-active { background: var(--accent-warning); }
+    .tl-pending { background: rgba(255,255,255,0.1); }
+    .pipeline-caption { font-size: 9.5px; color: var(--text-tertiary); margin: 3px 0 0; }
+
+    /* ─── Animated Counter / Stat Block ───────────── */
+    .stat-block { text-align: center; padding: 24px; }
+    .stat-eyebrow {
+      display: block; font-size: 10px; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--text-tertiary); margin-bottom: 4px;
+    }
+    .stat-number {
+      font-size: 48px; font-weight: 800; color: var(--accent-bright); line-height: 1;
+    }
+    .stat-suffix { font-size: 28px; font-weight: 700; color: var(--accent-bright); }
+    .stat-trend {
+      display: inline-block; font-size: 11px; padding: 2px 8px;
+      border-radius: 4px; margin-top: 8px;
+    }
+    .stat-trend.positive { background: rgba(0,228,159,0.15); color: var(--accent-success); }
+    .stat-trend.negative { background: rgba(255,92,92,0.15); color: var(--accent-error); }
+
+    /* ─── Source Quality / Dagger Notation ─────────── */
+    .source-unverified {
+      color: var(--accent-warning); font-size: 0.75em;
+      vertical-align: super; cursor: help; opacity: 0.85;
+    }
+    .dagger-footnote {
+      position: absolute; bottom: 12px; left: 5vw; right: 5vw;
+      font-size: 9px; color: var(--text-tertiary); font-style: italic;
+      border-top: 1px solid var(--border); padding-top: 6px;
+    }
+
+    /* ─── Compact Table ───────────────────────────── */
+    .compact-table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    .compact-table td, .compact-table th { padding: 6px 8px; }
+    .compact-table th {
+      background: rgba(78, 132, 196, 0.1); color: var(--accent);
+      text-align: left; font-weight: 600; border-bottom: 2px solid var(--border);
+    }
+    .compact-table td { border-bottom: 1px solid var(--border); vertical-align: top; }
+    .compact-table tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+    /* ─── Inovalon Header Banner ──────────────────── */
+    .inovalon-header {
+      background: linear-gradient(135deg, rgba(78,132,196,0.1), rgba(0,228,159,0.1));
+      border: 1px solid rgba(78,132,196,0.2); border-radius: 14px;
+      padding: 20px; margin-bottom: 16px; text-align: center;
+    }
+    .inovalon-header h3 { color: var(--accent); margin-bottom: 4px; }
+
+    /* ─── TOC Styles ──────────────────────────────── */
+    .toc-group-header {
+      font-size: 11px; text-transform: uppercase; letter-spacing: 2px;
+      margin-bottom: 12px; padding-bottom: 6px; border-bottom: 1px solid var(--border);
+      color: var(--accent);
+    }
+    .toc-item {
+      border: 1px solid var(--border); border-radius: 8px; margin-bottom: 6px;
+    }
+
+    /* ─── Grid-4 ──────────────────────────────────── */
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 12px; margin-top: 16px; }
+
+    /* ─── SVG Bar Chart Animations ─────────────────── */
+    .bar-chart .bar {
+      transform-origin: bottom; transform: scaleY(0);
+      transition: transform 0.6s var(--ease-out-expo), opacity 0.3s;
+    }
+    .bar-chart.is-visible .bar { transform: scaleY(1); }
+    .bar-chart .bar:nth-child(1) { transition-delay: 0.1s; }
+    .bar-chart .bar:nth-child(2) { transition-delay: 0.2s; }
+    .bar-chart .bar:nth-child(3) { transition-delay: 0.3s; }
+    .bar-chart .bar:nth-child(4) { transition-delay: 0.4s; }
+    .bar-chart .bar:nth-child(5) { transition-delay: 0.5s; }
+    .bar-chart .bar:nth-child(6) { transition-delay: 0.6s; }
+    .bar-chart .bar:hover, .bar-chart .bar:focus {
+      opacity: 0.85; outline: 2px solid var(--accent); outline-offset: 2px;
+    }
+
+    /* ─── SVG Line Chart Animations ────────────────── */
+    .line-chart .clip-rect { transition: width 1.5s var(--ease-out-expo); }
+    .line-chart.is-visible .clip-rect { width: 500px; }
+    .line-chart .data-points circle {
+      transform: scale(0); transition: transform 0.3s var(--ease-spring);
+    }
+    .line-chart.is-visible .data-points circle { transform: scale(1); transition-delay: 1.2s; }
+
+    /* ─── SVG Donut Chart Animations ───────────────── */
+    .donut-chart .segment {
+      stroke-dashoffset: 502.65;
+      transition: stroke-dashoffset 1s var(--ease-out-expo), opacity 0.2s;
+    }
+    .donut-chart.is-visible .segment:nth-child(2) { stroke-dashoffset: 0; transition-delay: 0.1s; }
+    .donut-chart.is-visible .segment:nth-child(3) { transition-delay: 0.2s; }
+    .donut-chart.is-visible .segment:nth-child(4) { transition-delay: 0.3s; }
+    .donut-chart.is-visible .segment:nth-child(5) { transition-delay: 0.4s; }
+    .donut-chart.is-visible .segment:nth-child(6) { transition-delay: 0.5s; }
+    .donut-chart .segment:hover { opacity: 0.8; stroke-width: 28; }
+    .donut-wrapper { display: flex; flex-direction: column; align-items: center; }
+    .chart-legend {
+      display: flex; flex-wrap: wrap; gap: 12px; list-style: none;
+      padding: 0; margin-top: 16px;
+    }
+    .legend-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; margin-right: 6px; vertical-align: middle; }
+
+    /* ─── Sparkline ────────────────────────────────── */
+    .sparkline-container { display: inline-block; width: 80px; height: 24px; vertical-align: middle; }
+    .sparkline { width: 100%; height: 100%; }
+    .sparkline-line { stroke-dasharray: 200; stroke-dashoffset: 200; transition: stroke-dashoffset 1s var(--ease-out-expo); }
+    .sparkline.is-visible .sparkline-line { stroke-dashoffset: 0; }
+    .sparkline-dot { opacity: 0; transition: opacity 0.3s; transition-delay: 0.8s; }
+    .sparkline.is-visible .sparkline-dot { opacity: 1; }
+
+    /* ─── Chart Container ─────────────────────────── */
+    .chart-container { margin: 1rem 0; }
+
+    /* ─── Tag Color Variants ──────────────────────── */
+    .tag.quality { background: rgba(108,108,255,0.15); color: var(--accent-violet); }
+    .tag-red { background: rgba(255,92,92,0.15); color: var(--accent-error); }
+    .tag-green { background: rgba(0,228,159,0.15); color: var(--accent-success); }
+    .tag-blue { background: rgba(78,132,196,0.15); color: var(--accent); }
+    .tag-orange { background: rgba(249,115,22,0.15); color: #f97316; }
+    .tag-purple { background: rgba(108,108,255,0.15); color: var(--accent-violet); }
+    .tag-gold { background: rgba(245,230,187,0.15); color: var(--accent-warning); }
+    .tag-cyan { background: rgba(89,221,253,0.15); color: var(--accent-bright); }
+
+    /* ─── Card Color Variants ─────────────────────── */
+    .card-accent { border-left: 3px solid var(--accent-error); }
+    .card-blue { border-left: 3px solid var(--accent); }
+    .card-green { border-left: 3px solid var(--accent-success); }
+    .card-orange { border-left: 3px solid #f97316; }
+    .card-purple { border-left: 3px solid var(--accent-violet); }
+    .card-gold { border-left: 3px solid var(--accent-warning); }
+    .card-cyan { border-left: 3px solid var(--accent-bright); }
+
+    /* ─── Utility ─────────────────────────────────── */
+    .highlight { color: var(--text-primary); font-weight: 600; }
+    .bar-fill-value { white-space: nowrap; }
+
+    /* ─── Color Utility Classes ───────────────────── */
     .red { color: var(--accent-error); }
+    .orange { color: #f97316; }
     .green { color: var(--accent-success); }
     .blue { color: var(--accent); }
     .gold { color: var(--accent-warning); }
+    .white { color: var(--text-primary); }
     .cyan { color: var(--accent-bright); }
     .purple { color: var(--accent-violet); }
+
+    /* ─── Responsive additions ────────────────────── */
+    @media (max-width: 1024px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+      .state-grid { grid-template-columns: 1fr 1fr; }
+    }

@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 export async function POST() {
-  await prisma.settings.upsert({
-    where: { id: "default" },
-    update: { onboardingDismissed: true },
-    create: { id: "default", onboardingDismissed: true },
-  });
+  await db.settings.upsert("default", { onboardingDismissed: true });
 
   return NextResponse.json({ ok: true });
 }

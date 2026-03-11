@@ -14,7 +14,7 @@
  * - Sonnet model (MODELS.PRESENT) for fast, high-quality HTML generation
  * - Prompt caching for the presentation system spec (avoids re-parsing
  *   on repeat runs)
- * - max_tokens: 16000 (presentations are 700-1200 lines of HTML)
+ * - max_tokens: 64000 (presentations are 700-1500+ lines of HTML; EXTENDED tier can exceed 24K tokens)
  * - No tools — pure text generation
  */
 
@@ -54,6 +54,59 @@ export interface PresentInput {
  *
  * Cached after first load.
  */
+const FALLBACK_PRESENTATION_SPEC = `# PRISM Presentation System (Fallback Spec)
+
+You are a presentation generator for PRISM Intelligence briefs.
+
+## Output Format
+Generate a complete, self-contained HTML5 document. Output ONLY raw HTML starting with <!DOCTYPE html>.
+
+## Required External Assets
+Include these in <head>:
+- <link rel="stylesheet" href="/styles/presentation.css">
+- <script src="/js/presentation.js" defer></script>
+
+Do NOT write any inline <style> or <script> tags.
+
+## Slide Structure
+Every slide must follow this skeleton:
+<section class="slide" id="slide-N">
+  <div class="slide-bg-glow"></div>
+  <div class="slide-inner"><!-- content --></div>
+  <div class="slide-footer">
+    <span>PRISM Intelligence</span>
+    <span>Source: [tier] - [description]</span>
+    <span>Slide N of T</span>
+  </div>
+</section>
+
+## Slide Sequence
+1. Title Slide - hero stats (.stat-block in .grid-3), dramatic title
+2. Executive Summary - 3-4 key takeaways as .card elements
+3. Methodology - agent roster as .compact-table
+4. Dimension Slides (one per agent) - use rich components, no plain bullet lists
+5. Emergence Slide (if emergent insights exist) - .emergence-card
+6. Tension Slide (if tensions exist) - .grid-2 side-by-side
+7. Strategic Implications - timeline or action matrix
+8. Source Provenance - .source-list with tier indicators
+9. Closing Slide - call to action, PRISM branding
+
+## Component Classes
+- .stat-block, .stat-number, .stat-eyebrow, .stat-suffix, .stat-trend
+- .card, .card-accent (color variants)
+- .tag, .tag-red through .tag-cyan, .tag.quality
+- .grid-2, .grid-3, .grid-4
+- .compact-table
+- .timeline-bar, .tl-segment
+- .bar-track, .bar-fill
+- .source-list, .source-item
+- .anim (fade-in on scroll), .anim-scale, .anim-blur
+- Stagger: style="--delay:1" through --delay:8
+
+## Branding
+Use "PRISM | Intelligence" throughout. No other brand references.
+`;
+
 let cachedSpec: string | null = null;
 
 function loadPresentationSpec(): string {
@@ -74,10 +127,12 @@ function loadPresentationSpec(): string {
     }
   }
 
-  throw new Error(
-    `[PRESENT] Cannot locate presentation-system.md. Searched: ${candidatePaths.join(", ")}. ` +
-    `Set PRISM_PRESENTATION_SPEC env var to the absolute path.`
+  console.warn(
+    `[PRESENT] presentation-system.md not found. Searched: ${candidatePaths.join(", ")}. ` +
+    `Using embedded fallback spec. Set PRISM_PRESENTATION_SPEC for full design fidelity.`,
   );
+  cachedSpec = FALLBACK_PRESENTATION_SPEC;
+  return cachedSpec;
 }
 
 // ─── Prompt Building ────────────────────────────────────────
@@ -266,15 +321,102 @@ PRISM | Intelligence branding throughout. No Inovalon or other brand references.
 Use "PRISM Intelligence" in the header mark and footer attributions.
 
 ## Output Instructions (CRITICAL)
-1. **EXECUTIVE QUALITY**: You MUST aggressively leverage the advanced PRISM components (Stat Grids, Finding Cards, Threat Meters, Strategic Timelines, Comparison Bars, State Grids, Policy Boxes, Quote Blocks).
-2. **NO PLAIN TEXT BULLETS**: Do not use standard <ul>/<li> lists for core findings. Wrap data in rich components instead to create a dense, cinematic, and data-rich visual experience.
-3. Generate a complete HTML5 file following the Presentation System spec.
-4. DO NOT write any inline CSS inside a <style> tag.
-5. DO NOT write any inline Javascript inside a <script> tag.
-6. You MUST include exactly these two external links in the HTML explicitly:
-  <link rel="stylesheet" href="/styles/presentation.css">
-  <script src="/js/presentation.js" defer></script>
-7. Output ONLY the raw HTML string starting with <!DOCTYPE html>. Do NOT include any markdown formatting (like \`\`\`html).`;
+
+### File Structure
+1. Generate a complete HTML5 file following the Presentation System spec exactly.
+2. DO NOT write any inline CSS inside a <style> tag — ALL styles come from the external stylesheet.
+3. DO NOT write any inline Javascript inside a <script> tag — ALL behavior comes from the external script.
+4. You MUST include exactly these two external links in the <head>:
+   <link rel="stylesheet" href="/styles/presentation.css">
+   <script src="/js/presentation.js" defer></script>
+5. Output ONLY the raw HTML string starting with <!DOCTYPE html>. No markdown fences.
+
+### Mandatory Slide Structure
+Every slide MUST follow this skeleton:
+<section class="slide" id="slide-N">
+  <div class="slide-bg-glow"></div>
+  <div class="slide-inner">
+    <!-- content here -->
+  </div>
+  <div class="slide-footer">
+    <span>PRISM Intelligence</span>
+    <span>Source: [tier] — [description]</span>
+    <span>Slide N of T</span>
+  </div>
+</section>
+
+The slide-footer is MANDATORY on every slide. Never omit it.
+
+### Slide Sequence (follow this order)
+1. **Title Slide**: Hero stats (3-4 .stat-block items in a .grid-3), dramatic title, subtitle with agent count and tier
+2. **Executive Summary**: 3-4 key takeaways as Finding Cards (.card with .card-accent colors), overall confidence meter
+3. **Methodology Slide**: Agent roster as compact table (.compact-table), PRISM tier badge, dimension breakdown
+4. **Dimension Slides** (one per agent/dimension): Each MUST use 3+ rich components — no plain bullet lists
+5. **Emergence Slide** (only if emergent insights exist): Use .emergence-card template with multi-agent provenance
+6. **Tension/Debate Slide** (only if tension points exist): Side-by-side comparison using .grid-2
+7. **Strategic Implications**: Timeline (.timeline-bar) or action matrix
+8. **Source Provenance Slide**: Source tier breakdown with dagger notation (.dagger-footnote), source list (.source-list)
+9. **Closing Slide**: Call to action, PRISM branding
+
+### Component Selection Rules (CRITICAL — NO PLAIN BULLETS)
+You MUST use these components aggressively. Match data type to the right component:
+
+**For quantitative data (numbers, percentages, metrics):**
+- .stat-block with .stat-number[data-target="N"] for animated big numbers (counter animates on scroll)
+- .stat-block includes .stat-eyebrow (label above), .stat-number, .stat-suffix (unit), .stat-trend.up/.down (arrow)
+- SVG bar charts: <svg class="bar-chart"> with <rect class="bar"> elements (animate via .is-visible)
+- SVG donut charts: <svg class="donut-chart"> with <circle class="segment"> (stroke-dasharray animation)
+- Sparklines: <svg class="sparkline-container"> with <polyline class="sparkline-line">
+- Comparison bars: .bar-label + .bar-track > .bar-fill[style="--fill-pct:75%"] + .bar-fill-value
+- Stat grids: .grid-3 or .grid-4 wrapping multiple .stat-block elements
+
+**For qualitative findings (insights, analysis, assessments):**
+- Finding Cards: .card with color accent classes (.card-accent through .card-cyan)
+- Tags: .tag with color variants (.tag-red through .tag-cyan) and .tag.quality for confidence badges
+- Quote Blocks: blockquote.quote-block with .quote-source attribution
+- Policy Boxes: .policy-box > .policy-label + .policy-body
+- Validation Boxes: .validation-box.pass or .validation-box.fail
+
+**For comparisons and tensions:**
+- .grid-2 side-by-side layouts
+- Comparison bars with labeled tracks
+- Threat meters: .threat-meter with 5x .threat-dot (colored .active dots for severity)
+- State grids: .state-grid > .state-item (with .active class for highlighted states)
+
+**For timelines and processes:**
+- Timeline bars: .timeline-bar > .tl-segment.tl-done / .tl-active / .tl-pending with labels
+- Strategic timelines: vertical .timeline with .tl-item entries
+
+**For source provenance:**
+- Source lists: .source-list > .source-item with tier indicators
+- Dagger notation: .source-unverified for unverified claims, .dagger-footnote for footnotes
+- Compact tables: .compact-table for structured data grids
+
+### Animation Classes
+- .anim — fade-in on scroll (opacity 0→1, translateY 30px→0)
+- .anim-scale — scale-in on scroll
+- .anim-blur — blur-in on scroll
+- .bar-fill — animated width bars (add .animate class)
+- Stagger delays: style="--delay:1" through --delay:8 for sequential reveals
+
+### Visual Hierarchy Rules
+- Maximum 2 component types per slide section (don't over-clutter)
+- Every slide needs a clear focal point — one hero element
+- Use .grid-2 or .grid-3 for multi-item layouts, .grid-4 for stat dashboards
+- Color-code by agent/dimension using card accent classes
+
+### TOC & Navigation (Extended Brief, 6+ agents)
+Include a TOC slide with grouped navigation:
+<div class="toc-group-header">Group Name</div>
+<a href="#slide-N" class="toc-item">Slide Title</a>
+
+Also populate the nav panel (#navPanel) with corresponding anchor links.
+
+### Editorial Judgment
+- If an agent returned thin data (few findings, low confidence), use a compact half-slide or merge with another dimension — do NOT pad with filler
+- If no emergent insights exist, skip the emergence slide entirely — do NOT fabricate emergence
+- Match slide density to data richness: data-heavy agents get full slides with charts; qualitative agents get cards and quotes
+- Prefer specificity over generality: use exact numbers, name sources, cite evidence tiers`;
 }
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -385,13 +527,14 @@ export async function present(input: PresentInput): Promise<PresentationResult> 
 
   const response = await client.messages.create({
     model: MODELS.PRESENT,
-    max_tokens: 16000,
+    max_tokens: 64000,
     system: [cachedSystemPrompt(presentationSpec)],
     messages: [{ role: "user", content: userPrompt }],
     stream: true,
   });
 
   let fullText = "";
+  let stopReason = "unknown";
   for await (const chunk of response) {
     if (chunk.type === "content_block_delta" && chunk.delta.type === "text_delta") {
       fullText += chunk.delta.text;
@@ -399,8 +542,13 @@ export async function present(input: PresentInput): Promise<PresentationResult> 
         type: "thinking_token", // Reuse this to keep SSE alive
         token: chunk.delta.text,
       });
+    } else if (chunk.type === "message_delta") {
+      stopReason = (chunk as unknown as { delta?: { stop_reason?: string } }).delta?.stop_reason ?? stopReason;
     } else if (chunk.type === "message_stop") {
-      console.log("[PRESENT] Generation complete. Stop Reason:", (chunk as unknown as Record<string, unknown>).stop_reason);
+      console.log(`[PRESENT] Generation complete. Stop reason: ${stopReason}, output length: ${fullText.length} chars`);
+      if (stopReason === "max_tokens") {
+        console.warn("[PRESENT] WARNING: Output was truncated by max_tokens limit. Presentation may be incomplete.");
+      }
     }
   }
 

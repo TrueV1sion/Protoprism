@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbopack",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -16,8 +16,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.78.0",
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "@prisma/adapter-better-sqlite3": "^7.4.2",
-    "better-sqlite3": "^12.6.2",
+    "@supabase/supabase-js": "^2.99.0",
     "dotenv": "^17.3.1",
     "framer-motion": "^12.34.3",
     "lucide-react": "^0.575.0",
@@ -27,9 +26,7 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^7.4.2",
     "@tailwindcss/postcss": "^4",
-    "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

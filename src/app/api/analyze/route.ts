@@ -7,7 +7,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { randomUUID } from "crypto";
 
 export async function POST(request: Request) {
@@ -23,12 +23,10 @@ export async function POST(request: Request) {
 
   const runId = randomUUID();
 
-  const run = await prisma.run.create({
-    data: {
-      id: runId,
-      query: query.trim(),
-      status: "INITIALIZE",
-    },
+  const run = await db.run.create({
+    id: runId,
+    query: query.trim(),
+    status: "INITIALIZE",
   });
 
   return NextResponse.json({

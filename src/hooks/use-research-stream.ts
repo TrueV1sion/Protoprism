@@ -131,7 +131,7 @@ export function useResearchStream() {
     const startStream = useCallback((query: string, runId: string, urgency: string = "balanced") => {
         // Guard: prevent re-triggering while already streaming
         if (eventSourceRef.current) {
-            console.warn("[PRISM] startStream called while already streaming — ignoring");
+            // Already streaming — ignore duplicate call
             return;
         }
 
@@ -141,11 +141,8 @@ export function useResearchStream() {
 
         const params = new URLSearchParams({ query, runId, urgency });
         const url = `/api/pipeline/stream?${params}`;
-        console.log("[PRISM] startStream called, connecting to:", url);
         const es = new EventSource(url);
         eventSourceRef.current = es;
-
-        es.onopen = () => console.log("[PRISM] SSE connection opened");
 
         // Phase changes
         es.addEventListener("phase_change", (e) => {
@@ -361,7 +358,6 @@ export function useResearchStream() {
         });
 
         es.onerror = (err) => {
-            console.error("[PRISM] SSE connection error:", err, "readyState:", es.readyState);
             // ALWAYS close to prevent native EventSource auto-reconnect
             // which would re-hit the SSE endpoint and start a new pipeline run.
             es.close();

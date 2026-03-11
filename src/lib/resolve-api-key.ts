@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { decrypt } from "@/lib/crypto";
 
 const ENV_MAP: Record<string, string> = {
@@ -17,9 +17,8 @@ export async function resolveApiKey(
   }
 
   try {
-    const record = await prisma.apiKey.findUnique({
-      where: { provider },
-    });
+    const keys = await db.apiKey.findMany();
+    const record = keys.find((k) => k.provider === provider);
     if (record) return decrypt(record.encryptedKey);
   } catch {
     // DB may not be available

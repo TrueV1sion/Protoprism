@@ -1,13 +1,5 @@
-/**
- * POST /api/pipeline/refine -- Phase 5: Refine an existing analysis.
- *
- * Accepts a nudge (user refinement request) and the original runId,
- * deploys focused agents, synthesizes new findings, and optionally
- * generates an updated presentation.
- */
-
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { refine } from "@/lib/pipeline/refine";
 import type { IntelligenceManifest, PipelineEvent } from "@/lib/pipeline/types";
 
@@ -28,16 +20,7 @@ export async function POST(request: Request) {
       );
     }
 
-    // Load the original run with all related data
-    const run = await prisma.run.findUnique({
-      where: { id: runId },
-      include: {
-        agents: { include: { findings: true } },
-        synthesis: { orderBy: { order: "asc" } },
-        presentation: true,
-        dimensions: true,
-      },
-    });
+    const run = await db.run.findUniqueWithRelations(runId);
 
     if (!run) {
       return NextResponse.json(
@@ -46,13 +29,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Reconstruct a minimal manifest from database records.
-    // The full manifest would normally be cached — this is a fallback.
-    // For v1, we pass what we have and let refine handle partial data.
+    if (run.manifest) {
+      const events: PipelineEvent[] = [];
+      const result = await refine({
+        nudge,
+        originalManifest: run.manifest as IntelligenceManifest,
+        emitEvent: (event) => events.push(event),
+      });
+
+      return NextResponse.json({
+        success: true,
+        nudgeType: result.nudgeType,
+        newFindings: result.newAgentResults.flatMap((r) => r.findings).length,
+        updatedLayers: result.updatedSynthesis.layers.length,
+      });
+    }
+
+    const dimensions = run.dimensions ?? [];
+    const agents = run.agents ?? [];
+    const synthesisList = run.synthesis ?? [];
+
     const manifest: IntelligenceManifest = {
       blueprint: {
         query: run.query,
-        dimensions: run.dimensions.map((d) => ({
+        dimensions: dimensions.map((d) => ({
           name: d.name,
           description: d.description,
           justification: "",
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
           lens: "",
           signalMatch: "",
         })),
-        agents: run.agents.map((a) => ({
+        agents: agents.map((a) => ({
           name: a.name,
           archetype: a.archetype ?? "",
           dimension: a.dimension ?? "",
@@ -83,11 +83,11 @@ export async function POST(request: Request) {
         estimatedTime: run.estimatedTime ?? "",
         ethicalConcerns: [],
       },
-      agentResults: run.agents.map((a) => ({
+      agentResults: agents.map((a) => ({
         agentName: a.name,
         archetype: a.archetype ?? "",
         dimension: a.dimension ?? "",
-        findings: a.findings.map((f) => ({
+        findings: (a.findings ?? []).map((f) => ({
           statement: f.statement,
           evidence: f.evidence ?? "",
           confidence: (f.confidence as "HIGH" | "MEDIUM" | "LOW") ?? "MEDIUM",
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
         tokensUsed: 0,
       })),
       synthesis: {
-        layers: run.synthesis.map((s) => ({
+        layers: synthesisList.map((s) => ({
           name: s.layerName as "foundation" | "convergence" | "tension" | "emergence" | "gap",
           description: s.description,
           insights: safeParseJson<string[]>(s.insights, []),
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
           }
         : { html: "", title: "", subtitle: "", slideCount: 0 },
       qualityReport: {
-        totalFindings: run.agents.reduce((sum, a) => sum + a.findings.length, 0),
+        totalFindings: agents.reduce((sum, a) => sum + (a.findings ?? []).length, 0),
         sourcedFindings: 0,
         sourceCoveragePercent: 0,
         confidenceDistribution: { high: 0, medium: 0, low: 0 },
@@ -134,8 +134,8 @@ export async function POST(request: Request) {
       },
       metadata: {
         runId,
-        startTime: run.createdAt.toISOString(),
-        endTime: run.completedAt?.toISOString() ?? new Date().toISOString(),
+        startTime: run.createdAt ?? new Date().toISOString(),
+        endTime: run.completedAt ?? new Date().toISOString(),
         totalTokens: 0,
         totalCost: 0,
       },

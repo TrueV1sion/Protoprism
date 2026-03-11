@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 // POST /api/seed — Seed the database with demo runs
 // This is a development-only endpoint
@@ -9,7 +9,7 @@ export async function POST() {
     }
 
     // Check if already seeded
-    const existing = await prisma.run.count();
+    const existing = await db.run.count();
     if (existing > 0) {
         return NextResponse.json({ message: `Database already has ${existing} runs. Skipping seed.` });
     }
@@ -56,80 +56,81 @@ export async function POST() {
     const results = [];
 
     for (const q of queries) {
-        const run = await prisma.run.create({
-            data: {
-                query: q.query,
-                status: "DELIVER",
-                tier: q.tier,
-                complexityScore: q.complexity,
-                breadth: 4,
-                depth: 4,
-                interconnection: q.complexity - 8,
-                estimatedTime: "3-5 minutes",
-                completedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-                dimensions: {
-                    create: q.agents.map((a) => ({
-                        name: a.dimension,
-                        description: `Analysis of ${a.dimension.toLowerCase()} aspects`,
-                    })),
-                },
-                agents: {
-                    create: q.agents.map((a) => ({
-                        name: a.name,
-                        archetype: a.archetype,
-                        mandate: `Analyze ${a.dimension.toLowerCase()} implications`,
-                        tools: JSON.stringify(["Web Search", "CMS Data", "SEC EDGAR"]),
-                        dimension: a.dimension,
-                        color: a.color,
-                        status: "complete",
-                        progress: 100,
-                    })),
-                },
-            },
-            include: { agents: true },
+        const run = await db.run.create({
+            query: q.query,
+            status: "DELIVER",
         });
 
+        await db.run.update(run.id, {
+            tier: q.tier,
+            complexityScore: q.complexity,
+            breadth: 4,
+            depth: 4,
+            interconnection: q.complexity - 8,
+            estimatedTime: "3-5 minutes",
+            completedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+        });
+
+        await db.dimension.createMany(
+            q.agents.map((a) => ({
+                name: a.dimension,
+                description: `Analysis of ${a.dimension.toLowerCase()} aspects`,
+                runId: run.id,
+            }))
+        );
+
+        await db.agent.createMany(
+            q.agents.map((a) => ({
+                name: a.name,
+                archetype: a.archetype,
+                mandate: `Analyze ${a.dimension.toLowerCase()} implications`,
+                tools: JSON.stringify(["Web Search", "CMS Data", "SEC EDGAR"]),
+                dimension: a.dimension,
+                color: a.color,
+                status: "complete",
+                progress: 100,
+                runId: run.id,
+            }))
+        );
+
+        // Fetch agents to get their generated IDs
+        const agents = await db.agent.findMany({ runId: run.id });
+
         // Add findings for each agent
-        for (const agent of run.agents) {
-            await prisma.finding.create({
-                data: {
-                    statement: `Key finding from ${agent.name} regarding ${agent.dimension}`,
-                    evidence: "Analysis from multiple primary sources",
-                    confidence: Math.random() > 0.4 ? "HIGH" : "MEDIUM",
-                    evidenceType: Math.random() > 0.5 ? "direct" : "modeled",
-                    source: "Primary data sources",
-                    implication: `Strategic implication for ${agent.dimension.toLowerCase()} positioning`,
-                    action: "keep",
-                    tags: JSON.stringify([]),
-                    agentId: agent.id,
-                    runId: run.id,
-                },
+        for (const agent of agents) {
+            await db.finding.create({
+                statement: `Key finding from ${agent.name} regarding ${agent.dimension}`,
+                evidence: "Analysis from multiple primary sources",
+                confidence: Math.random() > 0.4 ? "HIGH" : "MEDIUM",
+                evidenceType: Math.random() > 0.5 ? "direct" : "modeled",
+                source: "Primary data sources",
+                implication: `Strategic implication for ${agent.dimension?.toLowerCase()} positioning`,
+                action: "keep",
+                tags: JSON.stringify([]),
+                agentId: agent.id,
+                runId: run.id,
             });
         }
 
         // Add synthesis layers
         const layers = ["foundation", "convergence", "tension", "emergence", "gap"];
-        for (let i = 0; i < layers.length; i++) {
-            await prisma.synthesis.create({
-                data: {
-                    layerName: layers[i],
-                    description: `${layers[i].charAt(0).toUpperCase() + layers[i].slice(1)} layer analysis`,
-                    insights: JSON.stringify([`Multi-agent ${layers[i]} insight for this analysis`]),
-                    order: i,
-                    runId: run.id,
-                },
-            });
-        }
+        await db.synthesis.createMany(
+            layers.map((layer, i) => ({
+                layerName: layer,
+                description: `${layer.charAt(0).toUpperCase() + layer.slice(1)} layer analysis`,
+                insights: JSON.stringify([`Multi-agent ${layer} insight for this analysis`]),
+                sortOrder: i,
+                runId: run.id,
+            }))
+        );
 
         // Add presentation
-        await prisma.presentation.create({
-            data: {
-                title: q.query.slice(0, 60) + "...",
-                subtitle: q.query,
-                htmlPath: "prism-glp1-strategic-opportunity.html",
-                slideCount: 15,
-                runId: run.id,
-            },
+        await db.presentation.create({
+            title: q.query.slice(0, 60) + "...",
+            subtitle: q.query,
+            htmlPath: "prism-glp1-strategic-opportunity.html",
+            slideCount: 15,
+            runId: run.id,
         });
 
         results.push({ id: run.id, query: q.query.slice(0, 60) });

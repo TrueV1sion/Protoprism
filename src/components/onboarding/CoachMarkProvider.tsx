@@ -59,11 +59,15 @@ const TOUR_MARKS: TourMark[] = [
 interface CoachMarkContextValue {
   currentPhase: Phase;
   setCurrentPhase: (phase: Phase) => void;
+  isError: boolean;
+  setIsError: (isError: boolean) => void;
 }
 
 const CoachMarkContext = createContext<CoachMarkContextValue>({
   currentPhase: "input",
   setCurrentPhase: () => {},
+  isError: false,
+  setIsError: () => {},
 });
 
 export function useCoachMarkPhase() {
@@ -72,30 +76,16 @@ export function useCoachMarkPhase() {
 
 export default function CoachMarkProvider({
   children,
-  hasCompletedTour: initialTourComplete,
+  hasCompletedTour: hasCompletedTourProp,
 }: {
   children: ReactNode;
   hasCompletedTour?: boolean;
 }) {
   const [currentPhase, setCurrentPhase] = useState<Phase>("input");
-  const [tourActive, setTourActive] = useState(initialTourComplete === false);
+  const [isError, setIsError] = useState(false);
+  const [tourActive, setTourActive] = useState(!hasCompletedTourProp && hasCompletedTourProp !== undefined);
   const [shownMarks, setShownMarks] = useState<Set<string>>(new Set());
-  const [tourComplete, setTourComplete] = useState(initialTourComplete ?? false);
-
-  useEffect(() => {
-    // Skip fetch if status was provided via props
-    if (initialTourComplete !== undefined) return;
-    fetch("/api/onboarding/status")
-      .then((r) => r.json())
-      .then((data) => {
-        if (!data.hasCompletedTour) {
-          setTourActive(true);
-        } else {
-          setTourComplete(true);
-        }
-      })
-      .catch(() => {});
-  }, [initialTourComplete]);
+  const [tourComplete, setTourComplete] = useState(hasCompletedTourProp ?? false);
 
   const completeTour = useCallback(async () => {
     setTourActive(false);
@@ -118,12 +108,16 @@ export default function CoachMarkProvider({
   const activeMark =
     tourActive && !tourComplete
       ? TOUR_MARKS.find(
-          (m) => m.phase === currentPhase && !shownMarks.has(m.id)
+          (m) =>
+            m.phase === currentPhase &&
+            !shownMarks.has(m.id) &&
+            // Don't show the "complete" coach mark during error state
+            !(m.phase === "complete" && isError)
         )
       : null;
 
   return (
-    <CoachMarkContext.Provider value={{ currentPhase, setCurrentPhase }}>
+    <CoachMarkContext.Provider value={{ currentPhase, setCurrentPhase, isError, setIsError }}>
       {children}
       {activeMark && (
         <CoachMark

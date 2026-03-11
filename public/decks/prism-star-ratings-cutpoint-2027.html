@@ -719,5 +719,6 @@ slides.forEach(s=>animObserver.observe(s));
 function animateCounter(el){const target=parseInt(el.dataset.target);const start=performance.now();const duration=2000;function update(now){const progress=Math.min((now-start)/duration,1);const eased=1-Math.pow(1-progress,4);el.textContent=Math.round(target*eased);if(progress<1)requestAnimationFrame(update);}requestAnimationFrame(update);}
 window.addEventListener('load',()=>{setTimeout(()=>document.getElementById('navHint').classList.remove('show'),4000);});
 </script>
+<script src="/js/presentation.js" defer></script>
 </body>
 </html>

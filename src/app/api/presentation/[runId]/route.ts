@@ -1,12 +1,12 @@
 /**
  * GET /api/presentation/[runId]
- * 
+ *
  * Serves the generated HTML5 presentation for a completed run.
  * Looks up the Presentation record and reads the HTML file from public/decks/.
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 import { readFileSync } from "fs";
 import { resolve, sep } from "path";
 
@@ -16,9 +16,7 @@ export async function GET(
 ) {
     const { runId } = await params;
 
-    const presentation = await prisma.presentation.findUnique({
-        where: { runId },
-    });
+    const presentation = await db.presentation.findByRunId(runId);
 
     if (!presentation) {
         return NextResponse.json(

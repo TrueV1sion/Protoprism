@@ -46,12 +46,26 @@ export default function DeckViewer({ deck, onClose }: DeckViewerProps) {
                     const data = await res.json();
                     setProvenanceData(data);
                 }
-            } catch {
-                // Silently fail — provenance panel will be empty
+            } catch (err) {
+                console.warn('Provenance fetch failed:', err);
             }
         }
         fetchProvenance();
     }, [deck.id]);
+
+    useEffect(() => {
+        console.log('DeckViewer mounted, loading:', `/decks/${deck.filename}`);
+
+        const iframe = iframeRef.current;
+        if (iframe) {
+            iframe.onload = () => {
+                console.log('Iframe loaded successfully');
+            };
+            iframe.onerror = (err) => {
+                console.error('Iframe failed to load:', err);
+            };
+        }
+    }, [deck.filename]);
 
     // Keyboard shortcut: Escape to close
     useEffect(() => {

@@ -223,12 +223,22 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
     agentCount: agentResults.length,
   });
 
-  // Determine tier strategy
-  const tier = blueprint.tier;
+  // Determine synthesis strategy based on ACTUAL agent count, not tier label.
+  // The tier label reflects query complexity, but synthesis routing should be
+  // driven by the data volume we're synthesizing. With <=6 agents, the clustered
+  // EXTENDED path creates a single cluster and a redundant meta-synthesis layer
+  // that adds latency and risk of API termination for no benefit.
+  const agentCount = agentResults.length;
+  const effectiveSynthesisStrategy =
+    agentCount <= 4 ? "direct" :
+    agentCount <= 8 ? "validated" :
+    "clustered";
+
+  console.log(`[SYNTHESIZE] Tier=${blueprint.tier}, agents=${agentCount}, strategy=${effectiveSynthesisStrategy}`);
   let synthesis: SynthesisResult;
 
-  switch (tier) {
-    case "MICRO":
+  switch (effectiveSynthesisStrategy) {
+    case "direct":
       synthesis = await directSynthesis(
         agentResults,
         blueprint,
@@ -237,7 +247,7 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
       );
       break;
 
-    case "STANDARD": {
+    case "validated": {
       // Synthesis -> CRITIC review -> revision
       synthesis = await directSynthesis(
         agentResults,
@@ -256,16 +266,7 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
       const revisions = await criticReview(synthesis, agentResults);
 
       if (revisions.length > 0) {
-        // Apply revisions via a second synthesis pass
-        synthesis = await directSynthesis(
-          agentResults,
-          blueprint,
-          criticResult,
-          emitEvent,
-          revisions,
-        );
-        synthesis.criticRevisions = revisions;
-
+        // Emit critic revisions first (even if revision pass fails)
         for (const revision of revisions) {
           emitEvent({
             type: "critic_review",
@@ -273,13 +274,28 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
             severity: "warning",
           });
         }
+
+        // Apply revisions via a second synthesis pass (graceful fallback)
+        try {
+          const revisedSynthesis = await directSynthesis(
+            agentResults,
+            blueprint,
+            criticResult,
+            emitEvent,
+            revisions,
+          );
+          revisedSynthesis.criticRevisions = revisions;
+          synthesis = revisedSynthesis;
+        } catch (revisionError) {
+          console.warn(`[SYNTHESIZE] Revision pass failed, using initial synthesis: ${revisionError}`);
+          // Keep the original synthesis but attach the critic revisions
+          synthesis.criticRevisions = revisions;
+        }
       }
       break;
     }
 
-    case "EXTENDED":
-    case "MEGA":
-    case "CAMPAIGN": {
+    case "clustered": {
       // Cluster agents by interconnection -> sub-synthesize -> meta-synthesize
       const clusters = clusterAgents(blueprint, agentResults);
 
@@ -293,17 +309,21 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
       // Sub-synthesize each cluster
       const subSyntheses: Array<{ clusterName: string; synthesis: SynthesisResult }> = [];
 
-      for (const cluster of clusters) {
+      for (let ci = 0; ci < clusters.length; ci++) {
+        const cluster = clusters[ci];
+        console.log(`[SYNTHESIZE] Sub-synthesis ${ci + 1}/${clusters.length}: cluster "${cluster.name}" (${cluster.agents.length} agents)`);
         const subSynthesis = await directSynthesis(
           cluster.agents,
           blueprint,
           criticResult,
           emitEvent,
         );
+        console.log(`[SYNTHESIZE] Sub-synthesis ${ci + 1}/${clusters.length} complete: ${subSynthesis.layers.length} layers, ${subSynthesis.emergentInsights.length} emergences`);
         subSyntheses.push({ clusterName: cluster.name, synthesis: subSynthesis });
       }
 
       // Meta-synthesize
+      console.log(`[SYNTHESIZE] Starting meta-synthesis across ${subSyntheses.length} clusters...`);
       synthesis = await metaSynthesize(
         subSyntheses,
         blueprint,
@@ -312,8 +332,8 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
         emitEvent,
       );
 
-      // For STANDARD+ tiers, also run critic review on the meta-synthesis
-      if (tier !== "EXTENDED" || agentResults.length >= 10) {
+      // Run critic review on meta-synthesis for larger swarms
+      if (agentResults.length >= 10) {
         const revisions = await criticReview(synthesis, agentResults);
         if (revisions.length > 0) {
           synthesis.criticRevisions = revisions;
@@ -442,7 +462,7 @@ Call the submit_synthesis tool with your complete synthesis.`;
 
   const synthStream = client.messages.stream({
     model: MODELS.SYNTHESIZE,
-    max_tokens: 16000,
+    max_tokens: 32000,
     thinking: EXTENDED_THINKING,
     system: [cachedSystemPrompt(SYNTHESIS_SYSTEM_PROMPT)],
     tools: [
@@ -459,6 +479,7 @@ Call the submit_synthesis tool with your complete synthesis.`;
     messages: [{ role: "user", content: userPrompt }],
   });
   const response = await synthStream.finalMessage();
+  console.log(`[SYNTHESIZE/directSynthesis] LLM response received. Stop reason: ${response.stop_reason}, content blocks: ${response.content.length}`);
 
   // Extract synthesis from tool_use response
   const toolUseBlock = response.content.find(
@@ -467,6 +488,10 @@ Call the submit_synthesis tool with your complete synthesis.`;
   );
 
   if (!toolUseBlock) {
+    const textBlocks = response.content
+      .filter((b): b is Anthropic.Messages.TextBlock => b.type === "text")
+      .map((b) => b.text.substring(0, 200));
+    console.error(`[SYNTHESIZE/directSynthesis] No tool_use block found. Stop: ${response.stop_reason}. Text: ${JSON.stringify(textBlocks)}`);
     throw new Error(
       "SYNTHESIZE phase failed: model did not call submit_synthesis tool. " +
         `Stop reason: ${response.stop_reason}`,
@@ -474,9 +499,16 @@ Call the submit_synthesis tool with your complete synthesis.`;
   }
 
   const rawSynthesis = toolUseBlock.input as Record<string, unknown>;
+  console.log(`[SYNTHESIZE/directSynthesis] Tool call received. Layers: ${(rawSynthesis.layers as unknown[])?.length ?? "?"}, parsing with Zod...`);
 
   // Validate with Zod
-  const synthesis = SynthesisResultSchema.parse(rawSynthesis);
+  let synthesis: SynthesisResult;
+  try {
+    synthesis = SynthesisResultSchema.parse(rawSynthesis);
+  } catch (zodErr) {
+    console.error(`[SYNTHESIZE/directSynthesis] Zod validation failed:`, zodErr);
+    throw zodErr;
+  }
 
   // Post-validation: apply emergence quality gate
   // Filter out emergent insights that don't meet the 4+ on 3/5 threshold
@@ -572,7 +604,7 @@ Call submit_synthesis with the complete result.`;
 
   const metaStream = client.messages.stream({
     model: MODELS.SYNTHESIZE,
-    max_tokens: 16000,
+    max_tokens: 32000,
     thinking: EXTENDED_THINKING,
     system: [cachedSystemPrompt(SYNTHESIS_SYSTEM_PROMPT)],
     tools: [
@@ -588,6 +620,7 @@ Call submit_synthesis with the complete result.`;
     messages: [{ role: "user", content: metaPrompt }],
   });
   const response = await metaStream.finalMessage();
+  console.log(`[SYNTHESIZE/metaSynthesize] LLM response received. Stop reason: ${response.stop_reason}, content blocks: ${response.content.length}`);
 
   const toolUseBlock = response.content.find(
     (block): block is Anthropic.Messages.ToolUseBlock =>
@@ -595,6 +628,7 @@ Call submit_synthesis with the complete result.`;
   );
 
   if (!toolUseBlock) {
+    console.error(`[SYNTHESIZE/metaSynthesize] No tool_use block found. Stop: ${response.stop_reason}`);
     throw new Error(
       "META-SYNTHESIS failed: model did not call submit_synthesis tool.",
     );

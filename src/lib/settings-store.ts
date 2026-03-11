@@ -1,14 +1,14 @@
 /**
- * Settings Store — Persistent platform configuration via Prisma.
- * 
+ * Settings Store — Persistent platform configuration via Supabase.
+ *
  * SERVER-ONLY module. Uses a singleton Settings row (id="default")
  * to store a JSON blob of SettingsState.
- * 
+ *
  * For types/defaults that are safe to import from client components,
  * use settings-types.ts instead.
  */
 
-import { prisma } from "./prisma";
+import { db } from "./db";
 import { DEFAULT_SETTINGS, type SettingsState } from "./settings-types";
 
 // Re-export for convenience in server code
@@ -22,9 +22,7 @@ const SETTINGS_ID = "default";
  */
 export async function loadSettings(): Promise<SettingsState> {
     try {
-        const row = await prisma.settings.findUnique({
-            where: { id: SETTINGS_ID },
-        });
+        const row = await db.settings.findUnique(SETTINGS_ID);
 
         if (!row) return { ...DEFAULT_SETTINGS };
 
@@ -43,11 +41,7 @@ export async function loadSettings(): Promise<SettingsState> {
 export async function saveSettings(settings: SettingsState): Promise<SettingsState> {
     const data = JSON.stringify(settings);
 
-    await prisma.settings.upsert({
-        where: { id: SETTINGS_ID },
-        update: { data },
-        create: { id: SETTINGS_ID, data },
-    });
+    await db.settings.upsert(SETTINGS_ID, { data });
 
     return settings;
 }

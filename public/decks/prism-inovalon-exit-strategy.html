@@ -499,5 +499,6 @@ function upd(){dots.querySelectorAll('.nav-dot').forEach((d,i)=>{d.className='na
 document.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();go(1)}if(e.key==='ArrowLeft'){e.preventDefault();go(-1)}});
 let tx=0;document.addEventListener('touchstart',e=>{tx=e.changedTouches[0].screenX});document.addEventListener('touchend',e=>{const d=tx-e.changedTouches[0].screenX;if(Math.abs(d)>50)go(d>0?1:-1)});
 </script>
+<script src="/js/presentation.js" defer></script>
 </body>
 </html>

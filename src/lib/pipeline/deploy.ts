@@ -72,11 +72,30 @@ function normalizeAgentOutput(data: any): void {
   if (!Array.isArray(data.toolsUsed)) data.toolsUsed = [];
 
   // Normalize findings
+  const validSourceTiers = new Set(["PRIMARY", "SECONDARY", "TERTIARY"]);
+  const validConfidenceLevels = new Set(["HIGH", "MEDIUM", "LOW"]);
+  const validEvidenceTypes = new Set(["direct", "inferred", "analogical", "modeled"]);
+
   if (Array.isArray(data.findings)) {
     for (const f of data.findings) {
-      if (typeof f.sourceTier === "string") f.sourceTier = f.sourceTier.toUpperCase();
-      if (typeof f.confidence === "string") f.confidence = f.confidence.toUpperCase();
-      if (typeof f.evidenceType === "string") f.evidenceType = f.evidenceType.toLowerCase();
+      if (typeof f.sourceTier === "string") {
+        const upper = f.sourceTier.toUpperCase();
+        f.sourceTier = validSourceTiers.has(upper) ? upper : "SECONDARY";
+      } else {
+        f.sourceTier = "SECONDARY";
+      }
+      if (typeof f.confidence === "string") {
+        const upper = f.confidence.toUpperCase();
+        f.confidence = validConfidenceLevels.has(upper) ? upper : "MEDIUM";
+      } else {
+        f.confidence = "MEDIUM";
+      }
+      if (typeof f.evidenceType === "string") {
+        const lower = f.evidenceType.toLowerCase();
+        f.evidenceType = validEvidenceTypes.has(lower) ? lower : "inferred";
+      } else {
+        f.evidenceType = "inferred";
+      }
       if (!Array.isArray(f.tags)) f.tags = [];
     }
   }

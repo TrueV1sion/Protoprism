@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
 
 // GET /api/run/[id] — Get full run details with all relations
 export async function GET(
@@ -8,22 +8,7 @@ export async function GET(
 ) {
     const { id } = await params;
 
-    const run = await prisma.run.findUnique({
-        where: { id },
-        include: {
-            dimensions: true,
-            agents: {
-                include: {
-                    findings: true,
-                },
-            },
-            findings: true,
-            synthesis: {
-                orderBy: { order: "asc" },
-            },
-            presentation: true,
-        },
-    });
+    const run = await db.run.findUniqueWithRelations(id);
 
     if (!run) {
         return NextResponse.json({ error: "Run not found" }, { status: 404 });
@@ -50,12 +35,9 @@ export async function PATCH(
     }
 
     try {
-        const run = await prisma.run.update({
-            where: { id },
-            data: {
-                status: body.status,
-                ...(body.status === "DELIVER" ? { completedAt: new Date() } : {}),
-            },
+        const run = await db.run.update(id, {
+            status: body.status,
+            ...(body.status === "DELIVER" ? { completedAt: new Date() } : {}),
         });
         return NextResponse.json({ run });
     } catch (error) {

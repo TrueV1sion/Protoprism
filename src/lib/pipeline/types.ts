@@ -199,10 +199,10 @@ export type SynthesisLayer = z.infer<typeof SynthesisLayerSchema>;
 
 export const SynthesisResultSchema = z.object({
   layers: z.array(SynthesisLayerSchema),
-  emergentInsights: z.array(EmergentInsightSchema),
-  tensionPoints: z.array(TensionPointSchema),
+  emergentInsights: z.array(EmergentInsightSchema).default([]),
+  tensionPoints: z.array(TensionPointSchema).default([]),
   overallConfidence: ConfidenceLevelEnum,
-  criticRevisions: z.array(z.string()),
+  criticRevisions: z.array(z.string()).default([]),
 });
 export type SynthesisResult = z.infer<typeof SynthesisResultSchema>;
 
