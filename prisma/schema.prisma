@@ -1,0 +1,133 @@
+// PRISM Intelligence Platform — Prisma Schema
+// Aligned with swarm-protocol.md JSON schemas
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+// ─── Run ─────────────────────────────────────────────────
+// Mirrors swarm.json from swarm-protocol.md
+// Lifecycle: INITIALIZE → SPAWN → EXECUTE → MONITOR → RESOLVE → SYNTHESIZE → DELIVER → OPTIMIZE
+model Run {
+  id              String   @id @default(cuid())
+  query           String
+  status          String   @default("INITIALIZE") // lifecycle phase
+  tier            String   @default("STANDARD")   // MICRO | STANDARD | EXTENDED | MEGA | CAMPAIGN
+  autonomyMode    String   @default("supervised")  // supervised | guided | autonomous
+  complexityScore Int      @default(0)             // breadth + depth + interconnection (3-15)
+  breadth         Int      @default(0)
+  depth           Int      @default(0)
+  interconnection Int      @default(0)
+  estimatedTime   String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  completedAt     DateTime?
+
+  // Relations
+  agents        Agent[]
+  findings      Finding[]
+  synthesis     Synthesis[]
+  dimensions    Dimension[]
+  presentation  Presentation?
+}
+
+// ─── Dimension ───────────────────────────────────────────
+// Analytical dimensions decomposed from the query
+model Dimension {
+  id          String @id @default(cuid())
+  name        String
+  description String
+  runId       String
+  run         Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── Agent ───────────────────────────────────────────────
+// Mirrors agent roster from methodology-core.md §3
+model Agent {
+  id        String   @id @default(cuid())
+  name      String
+  archetype String                     // e.g. RESEARCHER-DATA, ANALYST-FINANCIAL
+  mandate   String
+  tools     String   @default("[]")    // JSON array of tool names
+  dimension String                     // which dimension this agent covers
+  color     String   @default("#59DDFD")
+  status    String   @default("idle")  // idle | active | complete | failed
+  progress  Int      @default(0)       // 0-100
+  runId     String
+  run       Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  findings  Finding[]
+}
+
+// ─── Finding ─────────────────────────────────────────────
+// Mirrors findings.json from swarm-protocol.md
+model Finding {
+  id           String @id @default(cuid())
+  statement    String
+  evidence     String
+  confidence   String @default("MEDIUM") // HIGH | MEDIUM | LOW
+  evidenceType String @default("direct") // direct | inferred | analogical | modeled
+  source       String
+  sourceTier   String @default("SECONDARY") // PRIMARY | SECONDARY | TERTIARY
+  implication  String
+  action       String @default("keep")   // keep | dismiss | boost | flag
+  tags         String @default("[]")     // JSON array
+
+  agentId String
+  agent   Agent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  runId   String
+  run     Run   @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── Synthesis ───────────────────────────────────────────
+// Mirrors merged.json layers from methodology-core.md §5-6
+// 5 layers: foundation, convergence, tension, emergence, gap
+model Synthesis {
+  id          String @id @default(cuid())
+  layerName   String              // foundation | convergence | tension | emergence | gap
+  description String
+  insights    String @default("[]") // JSON array of insight strings
+  order       Int    @default(0)    // display order
+
+  runId String
+  run   Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── Presentation ────────────────────────────────────────
+// Stores the generated HTML5 brief
+model Presentation {
+  id         String   @id @default(cuid())
+  title      String
+  subtitle   String   @default("")
+  htmlPath   String                    // path in public/decks/
+  slideCount Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  runId String @unique
+  run   Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── Settings ────────────────────────────────────────────
+// Platform configuration (singleton — one row with id="default")
+model Settings {
+  id                  String   @id @default("default")
+  data                String   @default("{}")   // JSON blob of SettingsState
+  onboardingDismissed Boolean  @default(false)
+  hasCompletedTour    Boolean  @default(false)
+  updatedAt           DateTime @updatedAt
+}
+
+// ─── ApiKey ──────────────────────────────────────────────
+// Encrypted API keys for external providers
+model ApiKey {
+  id           String   @id @default(uuid())
+  provider     String   @unique
+  encryptedKey String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
