@@ -39,6 +39,7 @@ import {
   type SynthesisLayer,
   type EmergentInsight,
 } from "./types";
+import type { MemoryBus } from "./memory-bus";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -46,6 +47,7 @@ export interface SynthesizeInput {
   agentResults: AgentResult[];
   blueprint: Blueprint;
   criticResult?: AgentResult;
+  memoryBus?: MemoryBus;
   emitEvent: (event: PipelineEvent) => void;
 }
 
@@ -210,7 +212,7 @@ function getSynthesisResultJsonSchema(): Record<string, unknown> {
  * - MEGA/CAMPAIGN (13+): Hierarchical -- grouped + meta pass
  */
 export async function synthesize(input: SynthesizeInput): Promise<SynthesisResult> {
-  const { agentResults, blueprint, criticResult, emitEvent } = input;
+  const { agentResults, blueprint, criticResult, memoryBus, emitEvent } = input;
 
   if (agentResults.length < 2) {
     throw new Error(
@@ -244,6 +246,8 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
         blueprint,
         criticResult,
         emitEvent,
+        undefined,
+        memoryBus,
       );
       break;
 
@@ -254,6 +258,8 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
         blueprint,
         criticResult,
         emitEvent,
+        undefined,
+        memoryBus,
       );
 
       emitEvent({
@@ -283,6 +289,7 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
             criticResult,
             emitEvent,
             revisions,
+            memoryBus,
           );
           revisedSynthesis.criticRevisions = revisions;
           synthesis = revisedSynthesis;
@@ -317,6 +324,8 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
           blueprint,
           criticResult,
           emitEvent,
+          undefined,
+          memoryBus,
         );
         console.log(`[SYNTHESIZE] Sub-synthesis ${ci + 1}/${clusters.length} complete: ${subSynthesis.layers.length} layers, ${subSynthesis.emergentInsights.length} emergences`);
         subSyntheses.push({ clusterName: cluster.name, synthesis: subSynthesis });
@@ -355,6 +364,8 @@ export async function synthesize(input: SynthesizeInput): Promise<SynthesisResul
         blueprint,
         criticResult,
         emitEvent,
+        undefined,
+        memoryBus,
       );
   }
 
@@ -395,6 +406,7 @@ async function directSynthesis(
   criticResult: AgentResult | undefined,
   emitEvent: (event: PipelineEvent) => void,
   criticRevisions?: string[],
+  memoryBus?: MemoryBus,
 ): Promise<SynthesisResult> {
   const client = getAnthropicClient();
 
@@ -456,6 +468,75 @@ ${criticRevisions.map((r, i) => `${i + 1}. ${r}`).join("\n")}
 Revise your synthesis to address these weaknesses while maintaining the quality of your emergence detection.`;
   }
 
+  // Append MemoryBus context if available
+  if (memoryBus) {
+    const openConflicts = memoryBus.getOpenConflicts();
+    if (openConflicts.length > 0) {
+      userPrompt += `
+
+---
+
+## Agent Conflicts (from MemoryBus)
+
+The following formal disagreements between agents were registered during execution. Consider these when mapping tension points and resolving conflicts:
+
+${openConflicts
+  .map(
+    (c) =>
+      `### Conflict: ${c.claim}
+- ID: ${c.id}
+- Type: ${c.resolutionStrategy ?? "unclassified"}
+- Registered at: ${c.timestamp}
+- Positions:
+${c.positions
+  .map(
+    (p) =>
+      `  - **${p.agent}**: ${p.position} (confidence: ${p.confidence})
+    Evidence: ${p.evidence}`,
+  )
+  .join("\n")}${c.resolution ? `\n- Prior resolution: ${c.resolution}` : ""}`,
+  )
+  .join("\n\n")}`;
+    }
+
+    const criticalSignals = memoryBus.readSignals({ priority: "high" });
+    if (criticalSignals.length > 0) {
+      userPrompt += `
+
+---
+
+## Critical Signals (from MemoryBus)
+
+High-priority and critical inter-agent signals that may indicate important discoveries or warnings:
+
+${criticalSignals
+  .map(
+    (s) =>
+      `- **[${s.priority.toUpperCase()}]** ${s.from} → ${s.to}: ${s.message} (type: ${s.type}, at: ${s.timestamp})`,
+  )
+  .join("\n")}`;
+    }
+
+    const bbSummary = memoryBus.getBlackboardSummary();
+    const summaryKeys = Object.keys(bbSummary);
+    if (summaryKeys.length > 0) {
+      const totalEntries = summaryKeys.reduce((sum, k) => sum + bbSummary[k], 0);
+      userPrompt += `
+
+---
+
+## Blackboard Coverage (from MemoryBus)
+
+The shared blackboard accumulated ${totalEntries} entries across these knowledge areas:
+
+${summaryKeys
+  .map((k) => `- **${k}**: ${bbSummary[k]} entries`)
+  .join("\n")}
+
+Consider whether the synthesis adequately covers all knowledge areas, and note any imbalances in coverage.`;
+    }
+  }
+
   userPrompt += `
 
 Call the submit_synthesis tool with your complete synthesis.`;
@@ -508,6 +589,38 @@ Call the submit_synthesis tool with your complete synthesis.`;
   } catch (zodErr) {
     console.error(`[SYNTHESIZE/directSynthesis] Zod validation failed:`, zodErr);
     throw zodErr;
+  }
+
+  // Post-synthesis: resolve MemoryBus conflicts addressed by tension points
+  if (memoryBus) {
+    const openConflicts = memoryBus.getOpenConflicts();
+    for (const conflict of openConflicts) {
+      const claimLower = conflict.claim.toLowerCase();
+      // Find a tension point whose text overlaps with this conflict's claim
+      const matchingTension = synthesis.tensionPoints.find((tp) => {
+        const tensionLower = tp.tension.toLowerCase();
+        // Check for meaningful word overlap between the claim and tension text
+        const claimWords = claimLower.split(/\s+/).filter((w) => w.length > 3);
+        const matchCount = claimWords.filter((w) => tensionLower.includes(w)).length;
+        return matchCount >= Math.min(2, claimWords.length);
+      });
+
+      if (matchingTension && matchingTension.resolution) {
+        memoryBus.resolveConflict(
+          conflict.id,
+          matchingTension.resolution,
+          "synthesis_resolution",
+        );
+        emitEvent({
+          type: "memory_conflict_resolved",
+          conflictId: conflict.id,
+          resolution: matchingTension.resolution,
+        });
+        console.log(
+          `[SYNTHESIZE] Resolved MemoryBus conflict "${conflict.claim}" via tension point resolution.`,
+        );
+      }
+    }
   }
 
   // Post-validation: apply emergence quality gate

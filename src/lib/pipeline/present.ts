@@ -33,6 +33,7 @@ import type {
   PipelineEvent,
   PresentationResult,
 } from "./types";
+import type { MemoryBus } from "./memory-bus";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -41,6 +42,7 @@ export interface PresentInput {
   agentResults: AgentResult[];
   blueprint: Blueprint;
   emitEvent: (event: PipelineEvent) => void;
+  memoryBus?: MemoryBus;
 }
 
 // ─── Presentation System Spec Loader ────────────────────────
@@ -275,6 +277,7 @@ function buildUserPrompt(
   synthesis: SynthesisResult,
   agentResults: AgentResult[],
   blueprint: Blueprint,
+  memoryBus?: MemoryBus,
 ): string {
   const slideGuidance = getSlideGuidance(blueprint);
   const agentRoster = buildAgentRoster(agentResults, blueprint);
@@ -416,7 +419,47 @@ Also populate the nav panel (#navPanel) with corresponding anchor links.
 - If an agent returned thin data (few findings, low confidence), use a compact half-slide or merge with another dimension — do NOT pad with filler
 - If no emergent insights exist, skip the emergence slide entirely — do NOT fabricate emergence
 - Match slide density to data richness: data-heavy agents get full slides with charts; qualitative agents get cards and quotes
-- Prefer specificity over generality: use exact numbers, name sources, cite evidence tiers`;
+- Prefer specificity over generality: use exact numbers, name sources, cite evidence tiers` +
+    buildMemoryBusSections(memoryBus);
+}
+
+/**
+ * Build optional MemoryBus context sections for the user prompt.
+ * Returns an empty string when no bus is provided, preserving existing behavior.
+ */
+function buildMemoryBusSections(memoryBus?: MemoryBus): string {
+  if (!memoryBus) return "";
+
+  const sections: string[] = [];
+
+  // --- Key Intelligence Signals (top 5 high/critical) ---
+  const highSignals = memoryBus.readSignals({ priority: "high" }).slice(0, 5);
+  if (highSignals.length > 0) {
+    const signalLines = highSignals
+      .map(
+        (s, i) =>
+          `${i + 1}. **[${s.priority.toUpperCase()}/${s.type}]** from ${s.from}: ${s.message}`,
+      )
+      .join("\n");
+    sections.push(`\n\n## Key Intelligence Signals\n${signalLines}`);
+  }
+
+  // --- Resolved Disagreements (conflicts with resolutions) ---
+  const allConflicts = memoryBus.getState().conflicts;
+  const resolvedConflicts = allConflicts.filter(
+    (c) => c.status === "resolved" && c.resolution,
+  );
+  if (resolvedConflicts.length > 0) {
+    const conflictLines = resolvedConflicts
+      .map(
+        (c) =>
+          `- **${c.claim}** — resolved via ${c.resolutionStrategy ?? "consensus"}: ${c.resolution}`,
+      )
+      .join("\n");
+    sections.push(`\n\n## Resolved Disagreements\n${conflictLines}`);
+  }
+
+  return sections.join("");
 }
 
 // ─── Helpers ────────────────────────────────────────────────
@@ -511,7 +554,7 @@ function deriveSubtitle(blueprint: Blueprint): string {
  * to generate the full HTML.
  */
 export async function present(input: PresentInput): Promise<PresentationResult> {
-  const { synthesis, agentResults, blueprint, emitEvent } = input;
+  const { synthesis, agentResults, blueprint, emitEvent, memoryBus } = input;
 
   // --- 1. Emit start event ---
   emitEvent({ type: "presentation_started" });
@@ -520,7 +563,7 @@ export async function present(input: PresentInput): Promise<PresentationResult> 
   const presentationSpec = loadPresentationSpec();
 
   // --- 3. Build the user prompt ---
-  const userPrompt = buildUserPrompt(synthesis, agentResults, blueprint);
+  const userPrompt = buildUserPrompt(synthesis, agentResults, blueprint, memoryBus);
 
   // --- 4. Call Sonnet to generate the presentation ---
   const client = getAnthropicClient();

@@ -41,6 +41,7 @@ export interface DeployInput {
   blueprint: Blueprint;
   emitEvent: (event: PipelineEvent) => void;
   signal?: AbortSignal;
+  memoryBus?: MemoryBus;
 }
 
 export interface DeployOutput {
@@ -124,7 +125,7 @@ function getAgentResultJsonSchema(): Record<string, unknown> {
  * CRITIC-FACTUAL always runs last, after all other agents.
  */
 export async function deploy(input: DeployInput): Promise<DeployOutput> {
-  const { agents, blueprint, emitEvent, signal } = input;
+  const { agents, blueprint, emitEvent, signal, memoryBus } = input;
 
   const mcpManager = getMCPManager();
   await mcpManager.initialize();
@@ -152,6 +153,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
       blueprint,
       emitEvent,
       mcpManager,
+      memoryBus,
     );
   } else {
     // Check abort before starting parallel execution
@@ -163,6 +165,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
       regularAgents,
       emitEvent,
       mcpManager,
+      memoryBus,
     );
   }
 
@@ -225,6 +228,7 @@ async function executeParallel(
   agents: ConstructedAgent[],
   emitEvent: (event: PipelineEvent) => void,
   mcpManager: MCPManager,
+  memoryBus?: MemoryBus,
 ): Promise<AgentResult[]> {
   const settled = await Promise.allSettled(
     agents.map((agent) => {
@@ -238,7 +242,14 @@ async function executeParallel(
     }),
   );
 
-  return collectResults(settled, agents, emitEvent);
+  const results = collectResults(settled, agents, emitEvent);
+
+  // Populate MemoryBus for MICRO/STANDARD tiers (not just EXTENDED+)
+  if (memoryBus) {
+    populateBusFromResults(results, memoryBus, emitEvent);
+  }
+
+  return results;
 }
 
 // ─── Two-Wave Execution ─────────────────────────────────────
@@ -248,8 +259,9 @@ async function executeTwoWaves(
   blueprint: Blueprint,
   emitEvent: (event: PipelineEvent) => void,
   mcpManager: MCPManager,
+  externalBus?: MemoryBus,
 ): Promise<AgentResult[]> {
-  const memoryBus = new MemoryBus(blueprint.query);
+  const memoryBus = externalBus ?? new MemoryBus(blueprint.query);
   const midpoint = Math.ceil(agents.length / 2);
   const wave1Agents = agents.slice(0, midpoint);
   const wave2Agents = agents.slice(midpoint);
@@ -277,38 +289,7 @@ async function executeTwoWaves(
   const wave1Results = collectResults(wave1Settled, wave1Agents, emitEvent);
 
   // Write Wave 1 findings to memory bus for Wave 2 context
-  for (const result of wave1Results) {
-    for (const finding of result.findings) {
-      memoryBus.writeToBlackboard({
-        agent: result.agentName,
-        key: `${result.dimension.toLowerCase().replace(/\s+/g, "-")}/${finding.evidenceType}`,
-        value: finding.statement,
-        confidence:
-          finding.confidence === "HIGH"
-            ? 0.9
-            : finding.confidence === "MEDIUM"
-              ? 0.6
-              : 0.3,
-        evidenceType:
-          finding.evidenceType === "direct"
-            ? "direct"
-            : finding.evidenceType === "inferred"
-              ? "inferred"
-              : "analogical",
-        tags: [result.dimension.toLowerCase(), finding.confidence.toLowerCase()],
-        references: [finding.source],
-      });
-    }
-    for (const signal of result.signals) {
-      memoryBus.sendSignal({
-        from: result.agentName,
-        to: "all",
-        type: "discovery",
-        priority: "medium",
-        message: signal,
-      });
-    }
-  }
+  populateBusFromResults(wave1Results, memoryBus, emitEvent);
 
   emitEvent({
     type: "agent_progress",
@@ -343,6 +324,9 @@ async function executeTwoWaves(
     wave2AgentsWithContext,
     emitEvent,
   );
+
+  // Write Wave 2 findings to memory bus for downstream phases
+  populateBusFromResults(wave2Results, memoryBus, emitEvent);
 
   return [...wave1Results, ...wave2Results];
 }
@@ -391,6 +375,60 @@ function collectResults(
   }
 
   return results;
+}
+
+// ─── MemoryBus Population ────────────────────────────────────
+
+function populateBusFromResults(
+  results: AgentResult[],
+  memoryBus: MemoryBus,
+  emitEvent: (event: PipelineEvent) => void,
+): void {
+  for (const result of results) {
+    for (const finding of result.findings) {
+      const key = `${result.dimension.toLowerCase().replace(/\s+/g, "-")}/${finding.evidenceType}`;
+      const confidence =
+        finding.confidence === "HIGH"
+          ? 0.9
+          : finding.confidence === "MEDIUM"
+            ? 0.6
+            : 0.3;
+
+      memoryBus.writeToBlackboard({
+        agent: result.agentName,
+        key,
+        value: finding.statement,
+        confidence,
+        evidenceType:
+          finding.evidenceType === "direct"
+            ? "direct"
+            : finding.evidenceType === "inferred"
+              ? "inferred"
+              : "analogical",
+        tags: [result.dimension.toLowerCase(), finding.confidence.toLowerCase()],
+        references: [finding.source],
+      });
+
+      emitEvent({ type: "memory_write", agentName: result.agentName, key, confidence });
+    }
+    for (const signal of result.signals) {
+      memoryBus.sendSignal({
+        from: result.agentName,
+        to: "all",
+        type: "discovery",
+        priority: "medium",
+        message: signal,
+      });
+
+      emitEvent({
+        type: "memory_signal",
+        from: result.agentName,
+        to: "all",
+        signalType: "discovery",
+        priority: "medium",
+      });
+    }
+  }
 }
 
 // ─── Per-Agent Execution with Tool-Use Loop ─────────────────

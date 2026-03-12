@@ -2,8 +2,8 @@
  * Unit tests for MCP Server Configuration (src/lib/mcp/config.ts)
  *
  * Tests validate:
- * - MCP_SERVERS registry defines all 6 healthcare MCP servers
- * - Every server has required config fields (description, available)
+ * - MCP_SERVERS registry defines all 21 MCP servers (Tier 1–3)
+ * - Every server has required config fields (description, available, transport)
  * - ARCHETYPE_TOOL_ROUTING maps archetypes to correct server sets
  * - All referenced servers in routing exist in MCP_SERVERS
  * - WEB_SEARCH_ARCHETYPES membership
@@ -20,23 +20,42 @@ import {
 
 describe("MCP_SERVERS", () => {
   const EXPECTED_SERVERS = [
+    // Tier 1 — Anthropic-provided healthcare servers
     "pubmed",
     "cms_coverage",
     "icd10",
     "npi_registry",
     "clinical_trials",
     "biorxiv",
+    // Tier 1 — Protoprism-built public API servers
+    "openfda",
+    "sec_edgar",
+    "federal_register",
+    "uspto_patents",
+    "congress_gov",
+    "bls_data",
+    "census_bureau",
+    // Tier 2 — Protoprism-built public API servers
+    "who_gho",
+    "gpo_govinfo",
+    "cbo",
+    "oecd_health",
+    "sam_gov",
+    // Tier 3 — Protoprism-built public API servers
+    "fda_orange_book",
+    "grants_gov",
+    "ahrq_hcup",
   ];
 
-  it("defines all 6 healthcare MCP servers", () => {
+  it("defines all expected MCP servers", () => {
     const serverNames = Object.keys(MCP_SERVERS);
     for (const name of EXPECTED_SERVERS) {
       expect(serverNames).toContain(name);
     }
   });
 
-  it("has exactly 6 servers", () => {
-    expect(Object.keys(MCP_SERVERS)).toHaveLength(6);
+  it("has exactly 21 servers", () => {
+    expect(Object.keys(MCP_SERVERS)).toHaveLength(21);
   });
 
   describe("every server has required config fields", () => {
@@ -58,7 +77,7 @@ describe("MCP_SERVERS", () => {
     }
   });
 
-  it("all healthcare servers are enabled (available: true)", () => {
+  it("all servers are enabled (available: true)", () => {
     for (const name of EXPECTED_SERVERS) {
       expect(MCP_SERVERS[name].available).toBe(true);
     }
@@ -68,16 +87,16 @@ describe("MCP_SERVERS", () => {
 // ─── ARCHETYPE_TOOL_ROUTING ────────────────────────────────
 
 describe("ARCHETYPE_TOOL_ROUTING", () => {
-  it("maps RESEARCHER-DATA to pubmed, clinical_trials, biorxiv", () => {
+  it("maps RESEARCHER-DATA to pubmed, clinical_trials, biorxiv and additional data servers", () => {
     const servers = ARCHETYPE_TOOL_ROUTING["RESEARCHER-DATA"];
     expect(servers).toBeDefined();
     expect(servers).toEqual(
       expect.arrayContaining(["pubmed", "clinical_trials", "biorxiv"])
     );
-    expect(servers).toHaveLength(3);
+    expect(servers).toHaveLength(8);
   });
 
-  it("maps RESEARCHER-DOMAIN to pubmed, cms_coverage, icd10, npi_registry, clinical_trials", () => {
+  it("maps RESEARCHER-DOMAIN to pubmed, cms_coverage, icd10, npi_registry, clinical_trials and more", () => {
     const servers = ARCHETYPE_TOOL_ROUTING["RESEARCHER-DOMAIN"];
     expect(servers).toBeDefined();
     expect(servers).toEqual(
@@ -89,13 +108,22 @@ describe("ARCHETYPE_TOOL_ROUTING", () => {
         "clinical_trials",
       ])
     );
-    expect(servers).toHaveLength(5);
+    expect(servers).toHaveLength(8);
   });
 
-  it("ANALYST-FINANCIAL has no MCP servers (empty array)", () => {
+  it("ANALYST-FINANCIAL maps to sec_edgar, bls_data, cbo, sam_gov, ahrq_hcup", () => {
     const servers = ARCHETYPE_TOOL_ROUTING["ANALYST-FINANCIAL"];
     expect(servers).toBeDefined();
-    expect(servers).toEqual([]);
+    expect(servers).toEqual(
+      expect.arrayContaining([
+        "sec_edgar",
+        "bls_data",
+        "cbo",
+        "sam_gov",
+        "ahrq_hcup",
+      ])
+    );
+    expect(servers).toHaveLength(5);
   });
 
   it("RESEARCHER-WEB has empty array (uses web_search native tool)", () => {

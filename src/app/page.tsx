@@ -21,6 +21,7 @@ import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import CoachMarkProvider, { useCoachMarkPhase } from "@/components/onboarding/CoachMarkProvider";
 import PhaseTransition from "@/components/PhaseTransition";
 import PipelineStepper from "@/components/PipelineStepper";
+import CinematicIntro from "@/components/CinematicIntro";
 import { useOnboarding } from "@/hooks/use-onboarding";
 
 function PhaseSync({ phase, isError }: { phase: Phase; isError: boolean }) {
@@ -35,10 +36,19 @@ function PhaseSync({ phase, isError }: { phase: Phase; isError: boolean }) {
 }
 
 export default function Home() {
+  const introStorageKey = "prism-cinematic-intro-seen";
   const [query, setQuery] = useState("");
   const [phase, setPhase] = useState<Phase>("input");
   const [selectedDeck, setSelectedDeck] = useState<DeckMeta | null>(null);
   const [blueprintApproved, setBlueprintApproved] = useState(false);
+  const [showIntro, setShowIntro] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    try {
+      return !window.sessionStorage.getItem(introStorageKey);
+    } catch {
+      return true;
+    }
+  });
 
   const [onboardingDismissedLocally, setOnboardingDismissedLocally] = useState(false);
 
@@ -47,6 +57,15 @@ export default function Home() {
 
   const showOnboarding = onboarding.showWizard && !onboardingDismissedLocally;
   const onboardingChecked = !onboarding.loading;
+
+  const completeIntro = useCallback(() => {
+    setShowIntro(false);
+    try {
+      window.sessionStorage.setItem(introStorageKey, "1");
+    } catch {
+      // no-op
+    }
+  }, [introStorageKey]);
 
   // ─── Start live analysis ──────────────────────────
   const handleSubmitLive = useCallback((e: React.FormEvent) => {
@@ -286,6 +305,9 @@ export default function Home() {
       <PhaseTransition phaseKey={effectivePhase}>
         {phaseContent}
       </PhaseTransition>
+      {showIntro && !showOnboarding && effectivePhase === "input" && stream.phase === "idle" && (
+        <CinematicIntro onComplete={completeIntro} />
+      )}
     </CoachMarkProvider>
   );
 }

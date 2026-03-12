@@ -23,6 +23,7 @@ import type {
     ConfidenceLevel,
 } from "./types";
 import type { AgentDeployResult } from "./deploy";
+import type { MemoryBus } from "./memory-bus";
 
 
 // ═══════════════════════════════════════════════════════════════
@@ -85,6 +86,7 @@ export interface ProvenanceReport {
 export function buildProvenanceChain(
     agentResults: AgentDeployResult[],
     blueprint: Blueprint,
+    memoryBus?: MemoryBus,
 ): ProvenanceReport {
     const links: ProvenanceLink[] = [];
     let linkId = 0;
@@ -138,6 +140,49 @@ export function buildProvenanceChain(
                 chainComplete: chainGaps.length === 0,
                 chainGaps,
             });
+        }
+    }
+
+    // ─── Blackboard provenance enrichment ────────────────
+    // If a MemoryBus is available, cross-reference each provenance link
+    // against blackboard entries. When a blackboard entry's value overlaps
+    // with the finding statement, use its `references` array to strengthen
+    // the provenance chain (fill source gaps, mark verifiable).
+    if (memoryBus) {
+        const bbEntries = memoryBus.readBlackboard();
+        for (const link of links) {
+            // Find matching blackboard entry by text overlap with the claim
+            const claimWords = link.claim.toLowerCase().split(/\s+/).filter(w => w.length > 4);
+            const matchingEntry = bbEntries.find(entry => {
+                const entryValue = entry.value.toLowerCase();
+                const overlapCount = claimWords.filter(w => entryValue.includes(w)).length;
+                // Require at least 30% of significant words to overlap
+                return claimWords.length > 0 && overlapCount / claimWords.length >= 0.3;
+            });
+
+            if (matchingEntry && matchingEntry.references.length > 0) {
+                // Strengthen provenance: if the original source was not verifiable,
+                // check if any blackboard reference is verifiable
+                const bbRefsJoined = matchingEntry.references.join("; ");
+                if (!link.sourceVerifiable) {
+                    const bbRefVerifiable = matchingEntry.references.some(ref => isSourceVerifiable(ref));
+                    if (bbRefVerifiable) {
+                        link.source = `${link.source} [bus-corroborated: ${bbRefsJoined}]`;
+                        link.sourceVerifiable = true;
+                        // Remove the gap about unverifiable source if it was the only issue
+                        const gapIdx = link.chainGaps.indexOf(
+                            "Source is not independently verifiable (no URL, DOI, or named document)"
+                        );
+                        if (gapIdx !== -1) {
+                            link.chainGaps.splice(gapIdx, 1);
+                        }
+                        link.chainComplete = link.chainGaps.length === 0;
+                    }
+                } else {
+                    // Already verifiable — append bus corroboration for extra provenance depth
+                    link.evidence = `${link.evidence} [bus-corroborated: ${bbRefsJoined}]`;
+                }
+            }
         }
     }
 
@@ -418,6 +463,7 @@ export interface QualityScoreReport {
 export function scoreOutput(
     manifest: IntelligenceManifest,
     provenanceReport: ProvenanceReport,
+    memoryBus?: MemoryBus,
 ): QualityScoreReport {
     const dimensions: RubricDimension[] = [];
 
@@ -504,12 +550,29 @@ export function scoreOutput(
         // No tensions with >4 agents is suspicious
         conflictScore = 30;
     }
+
+    // If memoryBus is available, enrich with actual bus conflict data
+    let conflictDetails = `${tensionCount} tensions: ${resolvedTensions} resolved, ${preservedTensions} preserved as complexity`;
+    if (memoryBus) {
+        const busStatus = memoryBus.getStatus();
+        const totalBusConflicts = busStatus.openConflicts + busStatus.resolvedConflicts;
+        const busConflictScore = totalBusConflicts > 0
+            ? Math.round((busStatus.resolvedConflicts / totalBusConflicts) * 100)
+            : 100;
+        // Blend the synthesis-based score with the bus-based score:
+        // bus data is the ground truth, so weight it more heavily
+        conflictScore = totalBusConflicts > 0
+            ? Math.round(conflictScore * 0.3 + busConflictScore * 0.7)
+            : conflictScore;
+        conflictDetails += ` | bus conflicts: ${busStatus.resolvedConflicts} resolved, ${busStatus.openConflicts} open`;
+    }
+
     dimensions.push({
         name: "Conflict Resolution",
         description: "Tensions between agents identified and handled",
         score: conflictScore,
         weight: 0.10,
-        details: `${tensionCount} tensions: ${resolvedTensions} resolved, ${preservedTensions} preserved as complexity`,
+        details: conflictDetails,
     });
 
     // 7. Dimensionality (15%)
@@ -749,13 +812,14 @@ export async function runQualityAssurance(
     gateSystem: QualityGateSystem,
     criticIssues?: Array<{ severity: string; description: string; recommendation: string }>,
     onEvent?: (event: PipelineEvent) => void,
+    memoryBus?: MemoryBus,
 ): Promise<QualityAssuranceReport> {
 
-    // 1. Build provenance chain
-    const provenance = buildProvenanceChain(agentResults, blueprint);
+    // 1. Build provenance chain (enriched with blackboard data if memoryBus available)
+    const provenance = buildProvenanceChain(agentResults, blueprint, memoryBus);
 
-    // 2. Score the output
-    const score = scoreOutput(manifest, provenance);
+    // 2. Score the output (enriched with bus conflict data if memoryBus available)
+    const score = scoreOutput(manifest, provenance, memoryBus);
 
     // 3. Evaluate synthesis gate
     const synthGateDecision = await gateSystem.evaluateGate(

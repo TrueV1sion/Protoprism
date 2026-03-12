@@ -12,6 +12,9 @@
  * Atomic operations via copy-on-write semantics.
  */
 
+import type { IRGraph } from "./ir-types";
+import { createEmptyIRGraph } from "./ir-types";
+
 // ─── Types ──────────────────────────────────────────────────
 
 export type EvidenceKind = "direct" | "inferred" | "analogical";
@@ -76,6 +79,7 @@ export interface MemoryBusState {
 
 export class MemoryBus {
     private state: MemoryBusState;
+    private irGraph: IRGraph | null = null;
 
     constructor(task: string) {
         this.state = {
@@ -255,6 +259,33 @@ export class MemoryBus {
      */
     getOpenConflicts(): Conflict[] {
         return this.state.conflicts.filter(c => c.status === "open");
+    }
+
+    // ─── IR Graph Operations ─────────────────────────────────
+
+    /**
+     * Initialize the IR graph for this run.
+     * Must be called before any IR enrichment can happen.
+     */
+    initIR(runId: string): void {
+        this.irGraph = createEmptyIRGraph(runId, this.state.task);
+    }
+
+    /**
+     * Get the live IR graph for mutation by enrichers.
+     * Returns null if initIR() was not called.
+     */
+    getIRGraph(): IRGraph | null {
+        return this.irGraph;
+    }
+
+    /**
+     * Export a deep copy of the IR graph for serialization.
+     * Returns null if initIR() was not called.
+     */
+    exportIR(): IRGraph | null {
+        if (!this.irGraph) return null;
+        return JSON.parse(JSON.stringify(this.irGraph));
     }
 
     // ─── State Management ───────────────────────────────────

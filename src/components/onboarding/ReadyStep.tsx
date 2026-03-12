@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { CheckCircle2, ChevronLeft, Sparkles } from "lucide-react";
+import { CheckCircle2, ChevronLeft, Sparkles, Play } from "lucide-react";
 
 interface ReadyStepProps {
   onDismiss: (dontShowAgain: boolean) => void;
@@ -14,77 +14,50 @@ export default function ReadyStep({ onDismiss, onBack }: ReadyStepProps) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: 30 }}
+      initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: -30 }}
-      className="flex flex-col items-center justify-center min-h-screen px-6 text-center"
+      exit={{ opacity: 0, x: -20 }}
+      className="flex flex-col items-center justify-center min-h-screen px-4 md:px-6 text-center"
     >
-      <motion.div
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 0.5 }}
-        className="mb-6"
-      >
-        <CheckCircle2 className="w-16 h-16 text-prism-jade" />
-      </motion.div>
-
-      <motion.h2
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2 }}
-        className="text-2xl font-bold text-white mb-3"
-      >
-        You&apos;re All Set
-      </motion.h2>
-
-      <motion.p
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.3 }}
-        className="text-sm text-prism-muted max-w-md mb-8"
-      >
-        PRISM is ready. Enter a strategic question and watch coordinated AI
-        agents analyze it across multiple dimensions in real time.
-      </motion.p>
-
-      <motion.label
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="flex items-center gap-2 mb-8 cursor-pointer select-none"
-      >
-        <input
-          type="checkbox"
-          checked={dontShowAgain}
-          onChange={(e) => setDontShowAgain(e.target.checked)}
-          className="w-4 h-4 rounded border-white/20 bg-white/5 text-prism-sky focus:ring-prism-sky/30"
-        />
-        <span className="text-xs text-prism-muted">
-          Don&apos;t show this again
-        </span>
-      </motion.label>
-
-      <motion.div
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="flex items-center gap-4"
-      >
-        <button
-          onClick={onBack}
-          className="flex items-center gap-1 px-5 py-2.5 rounded-lg text-sm text-prism-muted border border-white/10 hover:border-white/20 hover:text-white transition-colors"
+      <div className="w-full max-w-2xl glass-panel rounded-3xl p-6 md:p-9 space-y-6">
+        <motion.div
+          initial={{ scale: 0.85, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.45 }}
+          className="mx-auto w-20 h-20 rounded-full bg-prism-jade/10 border border-prism-jade/35 flex items-center justify-center"
         >
-          <ChevronLeft className="w-4 h-4" />
-          Back
-        </button>
-        <button
-          onClick={() => onDismiss(dontShowAgain)}
-          className="flex items-center gap-2 px-8 py-3 rounded-lg text-sm font-medium bg-prism-sky text-prism-bg shadow-[0_0_20px_rgba(89,221,253,0.25)] hover:bg-white transition-all duration-300"
-        >
-          <Sparkles className="w-4 h-4" />
-          Begin Analysis
-        </button>
-      </motion.div>
+          <CheckCircle2 className="w-12 h-12 text-prism-jade" />
+        </motion.div>
+
+        <div className="space-y-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-white">You&apos;re Ready to Launch</h2>
+          <p className="text-sm text-prism-muted max-w-lg mx-auto leading-relaxed">
+            PRISM is configured. Submit a strategic mission and monitor specialized agent collaboration in real time.
+          </p>
+        </div>
+
+        <label className="flex items-center justify-center gap-2 cursor-pointer select-none text-xs text-prism-muted">
+          <input
+            type="checkbox"
+            checked={dontShowAgain}
+            onChange={(e) => setDontShowAgain(e.target.checked)}
+            className="w-4 h-4 rounded border-white/20 bg-white/5 text-cyan-400 focus:ring-cyan-400/30"
+          />
+          Don&apos;t show onboarding again
+        </label>
+
+        <div className="flex items-center justify-center gap-3 pt-2">
+          <button onClick={onBack} className="prism-button-ghost px-5 py-2.5 text-sm">
+            <ChevronLeft className="w-4 h-4" />
+            Back
+          </button>
+          <button onClick={() => onDismiss(dontShowAgain)} className="prism-button-primary px-8 py-3 text-sm">
+            <Play className="w-4 h-4" />
+            Begin Analysis
+            <Sparkles className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
     </motion.div>
   );
 }

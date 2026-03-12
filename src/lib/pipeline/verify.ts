@@ -24,6 +24,7 @@ import type {
   SourceTier,
   AgentFinding,
 } from "./types";
+import type { MemoryBus } from "./memory-bus";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -32,6 +33,7 @@ export interface VerifyInput {
   agentResults: AgentResult[];
   autonomyMode: AutonomyMode;
   emitEvent: (event: PipelineEvent) => void;
+  memoryBus?: MemoryBus;
 }
 
 export interface VerifyOutput {
@@ -59,6 +61,7 @@ interface RankedClaim {
 function extractCandidateClaims(
   synthesis: SynthesisResult,
   agentResults: AgentResult[],
+  memoryBus?: MemoryBus,
 ): RankedClaim[] {
   const candidates: RankedClaim[] = [];
 
@@ -111,6 +114,19 @@ function extractCandidateClaims(
       sourceAgent: tracingA.agentName,
       findingIndex: tracingA.findingIndex,
     });
+  }
+
+  // --- 4. Claims from open MemoryBus conflicts ---
+  if (memoryBus) {
+    for (const conflict of memoryBus.getOpenConflicts()) {
+      candidates.push({
+        claim: conflict.claim,
+        impactScore: 6, // Conflicts are moderately-high impact
+        sourceTier: "SECONDARY",
+        sourceAgent: conflict.registeredBy,
+        findingIndex: -1,
+      });
+    }
   }
 
   // Sort by impact score descending and take top 10
@@ -168,7 +184,7 @@ function traceClaimToFinding(
  * and gates the pipeline based on autonomy mode.
  */
 export async function verify(input: VerifyInput): Promise<VerifyOutput> {
-  const { synthesis, agentResults, autonomyMode, emitEvent } = input;
+  const { synthesis, agentResults, autonomyMode, emitEvent, memoryBus } = input;
 
   // Autonomous mode: skip verification entirely
   if (autonomyMode === "autonomous") {
@@ -180,7 +196,7 @@ export async function verify(input: VerifyInput): Promise<VerifyOutput> {
   }
 
   // --- Extract and rank top claims ---
-  const rankedClaims = extractCandidateClaims(synthesis, agentResults);
+  const rankedClaims = extractCandidateClaims(synthesis, agentResults, memoryBus);
 
   // --- Build verified claims list ---
   const topClaims: VerifiedClaim[] = rankedClaims.map((rc) => ({

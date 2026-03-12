@@ -25,6 +25,16 @@ const SNAKE_MAP: Record<string, string> = {
   onboardingDismissed: "onboarding_dismissed",
   hasCompletedTour: "has_completed_tour",
   encryptedKey: "encrypted_key",
+  entryCount: "entry_count",
+  signalCount: "signal_count",
+  conflictCount: "conflict_count",
+  openConflictCount: "open_conflict_count",
+  findingCount: "finding_count",
+  emergenceCount: "emergence_count",
+  tensionCount: "tension_count",
+  gapCount: "gap_count",
+  qualityGrade: "quality_grade",
+  overallScore: "overall_score",
 };
 
 const CAMEL_MAP: Record<string, string> = {};
@@ -158,6 +168,33 @@ export interface DbApiKey {
   encryptedKey: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface DbMemoryBusSnapshot {
+  id: string;
+  phase: string;
+  snapshot: string;
+  entryCount: number;
+  signalCount: number;
+  conflictCount: number;
+  openConflictCount: number;
+  createdAt: string;
+  runId: string;
+}
+
+export interface DbIrGraph {
+  id: string;
+  tier: string;
+  graph: string;
+  findingCount: number;
+  emergenceCount: number;
+  tensionCount: number;
+  gapCount: number;
+  qualityGrade: string | null;
+  overallScore: number | null;
+  createdAt: string;
+  updatedAt: string;
+  runId: string;
 }
 
 // ─── Database access object ─────────────────────────────────
@@ -512,6 +549,101 @@ export const db = {
         return { ...existing, ...data };
       }
       return db.presentation.create({ ...data, runId });
+    },
+  },
+
+  // ── MemoryBusSnapshots ──────────────────────────────────
+  memoryBusSnapshot: {
+    async create(data: Omit<DbMemoryBusSnapshot, "id" | "createdAt">) {
+      const { data: row, error } = await supabase
+        .from("memory_bus_snapshots")
+        .insert({
+          id: cuid(),
+          ...toSnake(data as unknown as Record<string, unknown>),
+        })
+        .select()
+        .single();
+      if (error) throw new Error(`db.memoryBusSnapshot.create: ${error.message}`);
+      return toCamel<DbMemoryBusSnapshot>(row);
+    },
+
+    async findByRunId(runId: string) {
+      const { data: rows, error } = await supabase
+        .from("memory_bus_snapshots")
+        .select("*")
+        .eq("run_id", runId)
+        .order("created_at", { ascending: true });
+      if (error) throw new Error(`db.memoryBusSnapshot.findByRunId: ${error.message}`);
+      return toCamelArray<DbMemoryBusSnapshot>(rows ?? []);
+    },
+
+    async findLatest(runId: string) {
+      const { data: row, error } = await supabase
+        .from("memory_bus_snapshots")
+        .select("*")
+        .eq("run_id", runId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw new Error(`db.memoryBusSnapshot.findLatest: ${error.message}`);
+      return row ? toCamel<DbMemoryBusSnapshot>(row) : null;
+    },
+  },
+
+  // ── IR Graphs ───────────────────────────────────────────
+  irGraph: {
+    async upsert(data: {
+      runId: string;
+      tier: string;
+      graph: string;
+      findingCount: number;
+      emergenceCount: number;
+      tensionCount: number;
+      gapCount: number;
+      qualityGrade?: string;
+      overallScore?: number;
+    }) {
+      const snakeData = toSnake(data as unknown as Record<string, unknown>);
+      const { data: row, error } = await supabase
+        .from("ir_graphs")
+        .upsert(
+          { id: cuid(), ...snakeData },
+          { onConflict: "run_id" },
+        )
+        .select()
+        .single();
+      if (error) throw new Error(`db.irGraph.upsert: ${error.message}`);
+      return toCamel<DbIrGraph>(row);
+    },
+
+    async findByRunId(runId: string) {
+      const { data: row, error } = await supabase
+        .from("ir_graphs")
+        .select("*")
+        .eq("run_id", runId)
+        .maybeSingle();
+      if (error) throw new Error(`db.irGraph.findByRunId: ${error.message}`);
+      return row ? toCamel<DbIrGraph>(row) : null;
+    },
+
+    async findLatest(limit: number = 10) {
+      const { data: rows, error } = await supabase
+        .from("ir_graphs")
+        .select("*")
+        .order("created_at", { ascending: false })
+        .limit(limit);
+      if (error) throw new Error(`db.irGraph.findLatest: ${error.message}`);
+      return toCamelArray<DbIrGraph>(rows ?? []);
+    },
+
+    async findByTier(tier: string) {
+      const { data: rows, error } = await supabase
+        .from("ir_graphs")
+        .select("*")
+        .eq("tier", tier)
+        .order("created_at", { ascending: false });
+      if (error) throw new Error(`db.irGraph.findByTier: ${error.message}`);
+      return toCamelArray<DbIrGraph>(rows ?? []);
     },
   },
 

@@ -29,11 +29,13 @@ model Run {
   completedAt     DateTime?
 
   // Relations
-  agents        Agent[]
-  findings      Finding[]
-  synthesis     Synthesis[]
-  dimensions    Dimension[]
-  presentation  Presentation?
+  agents             Agent[]
+  findings           Finding[]
+  synthesis          Synthesis[]
+  dimensions         Dimension[]
+  presentation       Presentation?
+  memoryBusSnapshots MemoryBusSnapshot[]
+  irGraph            IrGraph?
 }
 
 // ─── Dimension ───────────────────────────────────────────
@@ -110,6 +112,39 @@ model Presentation {
 
   runId String @unique
   run   Run    @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── MemoryBusSnapshot ──────────────────────────────────
+// Captures MemoryBus state at key pipeline phases
+model MemoryBusSnapshot {
+  id                String   @id @default(cuid())
+  phase             String                    // DEPLOY | SYNTHESIZE | COMPLETE
+  snapshot          String   @default("{}")   // JSON blob of MemoryBusState
+  entryCount        Int      @default(0)
+  signalCount       Int      @default(0)
+  conflictCount     Int      @default(0)
+  openConflictCount Int      @default(0)
+  createdAt         DateTime @default(now())
+  runId             String
+  run               Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
+}
+
+// ─── IR Graph ───────────────────────────────────────────
+// Assembled IR product artifact consumed by renderers
+model IrGraph {
+  id              String   @id @default(cuid())
+  tier            String
+  graph           String   @default("{}")  // JSON blob of IRGraph
+  findingCount    Int      @default(0)
+  emergenceCount  Int      @default(0)
+  tensionCount    Int      @default(0)
+  gapCount        Int      @default(0)
+  qualityGrade    String?
+  overallScore    Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  runId           String   @unique
+  run             Run      @relation(fields: [runId], references: [id], onDelete: Cascade)
 }
 
 // ─── Settings ────────────────────────────────────────────

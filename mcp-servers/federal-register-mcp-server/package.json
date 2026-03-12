@@ -1,0 +1,21 @@
+{
+  "name": "federal-register-mcp-server",
+  "version": "1.0.0",
+  "description": "MCP server for the Federal Register API — search federal rules, proposed rules, notices, and presidential documents",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:http": "node dist/index.js --http",
+    "dev": "tsc --watch"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.1",
+    "axios": "^1.7.9",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
+}
