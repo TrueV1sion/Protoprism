@@ -40,7 +40,7 @@ export interface IRFinding {
   key: string;
   value: string;
   confidence: number;
-  evidenceType: "direct" | "inferred" | "analogical";
+  evidenceType: "direct" | "inferred" | "analogical" | "modeled";
   tags: string[];
   references: string[];
   timestamp: string;
@@ -77,7 +77,7 @@ export interface IRTension {
   }>;
   resolution: string | null;
   resolutionStrategy?: string;
-  conflictType?: "factual" | "interpretive" | "methodological" | "scope";
+  conflictType?: "factual" | "interpretive" | "methodological" | "scope" | "predictive" | "values_based";
   resolutionFramework?: string;
 }
 
