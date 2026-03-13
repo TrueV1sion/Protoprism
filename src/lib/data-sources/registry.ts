@@ -13,8 +13,37 @@ import type { ArchetypeFamily } from "@/lib/pipeline/types";
 import type { DataSourceTool, ToolResult } from "./types";
 import { ResultCache } from "./cache";
 import { formatCitations } from "./format";
+// Layer 2: Granular tool imports (15 modules)
 import { openfdaTools } from "./tools/openfda.tools";
+import { secEdgarTools } from "./tools/sec-edgar.tools";
+import { federalRegisterTools } from "./tools/federal-register.tools";
+import { usptoPatentsTools } from "./tools/uspto-patents.tools";
+import { congressGovTools } from "./tools/congress-gov.tools";
+import { blsDataTools } from "./tools/bls-data.tools";
+import { censusBureauTools } from "./tools/census-bureau.tools";
+import { whoGhoTools } from "./tools/who-gho.tools";
+import { gpoGovinfoTools } from "./tools/gpo-govinfo.tools";
+import { cboTools } from "./tools/cbo.tools";
+import { oecdHealthTools } from "./tools/oecd-health.tools";
+import { samGovTools } from "./tools/sam-gov.tools";
+import { fdaOrangeBookTools } from "./tools/fda-orange-book.tools";
+import { grantsGovTools } from "./tools/grants-gov.tools";
+import { ahrqHcupTools } from "./tools/ahrq-hcup.tools";
+
+// Layer 3: Research tool imports (13 modules)
 import { drugSafetyResearchTool } from "./research/drug-safety";
+import { clinicalEvidenceResearchTool } from "./research/clinical-evidence";
+import { coveragePolicyResearchTool } from "./research/coverage-policy";
+import { companyPositionResearchTool } from "./research/company-position";
+import { regulatoryLandscapeResearchTool } from "./research/regulatory-landscape";
+import { marketDynamicsResearchTool } from "./research/market-dynamics";
+import { patentLandscapeResearchTool } from "./research/patent-landscape";
+import { legislativeStatusResearchTool } from "./research/legislative-status";
+import { providerLandscapeResearchTool } from "./research/provider-landscape";
+import { globalHealthResearchTool } from "./research/global-health";
+import { competitiveIntelResearchTool } from "./research/competitive-intel";
+import { fundingLandscapeResearchTool } from "./research/funding-landscape";
+import { qualityBenchmarksResearchTool } from "./research/quality-benchmarks";
 
 // ─── Archetype Routing ───────────────────────────────────────
 
@@ -239,11 +268,37 @@ export class ToolRegistry {
 // ─── Tool Initialization ────────────────────────────────────
 
 function initializeAllTools(registry: ToolRegistry): void {
-  // Layer 2: Granular tools (vertical slice — more added in Task 15)
+  // Layer 2: Register all 15 granular tool sets
   registry.registerTools(openfdaTools);
+  registry.registerTools(secEdgarTools);
+  registry.registerTools(federalRegisterTools);
+  registry.registerTools(usptoPatentsTools);
+  registry.registerTools(congressGovTools);
+  registry.registerTools(blsDataTools);
+  registry.registerTools(censusBureauTools);
+  registry.registerTools(whoGhoTools);
+  registry.registerTools(gpoGovinfoTools);
+  registry.registerTools(cboTools);
+  registry.registerTools(oecdHealthTools);
+  registry.registerTools(samGovTools);
+  registry.registerTools(fdaOrangeBookTools);
+  registry.registerTools(grantsGovTools);
+  registry.registerTools(ahrqHcupTools);
 
-  // Layer 3: Research tools (vertical slice — more added in Task 15)
+  // Layer 3: Register all 13 research tools
   registry.registerTool(drugSafetyResearchTool);
+  registry.registerTool(clinicalEvidenceResearchTool);
+  registry.registerTool(coveragePolicyResearchTool);
+  registry.registerTool(companyPositionResearchTool);
+  registry.registerTool(regulatoryLandscapeResearchTool);
+  registry.registerTool(marketDynamicsResearchTool);
+  registry.registerTool(patentLandscapeResearchTool);
+  registry.registerTool(legislativeStatusResearchTool);
+  registry.registerTool(providerLandscapeResearchTool);
+  registry.registerTool(globalHealthResearchTool);
+  registry.registerTool(competitiveIntelResearchTool);
+  registry.registerTool(fundingLandscapeResearchTool);
+  registry.registerTool(qualityBenchmarksResearchTool);
 
   // Load archetype routing
   registry.loadDefaultRouting(ARCHETYPE_TOOL_ROUTING);
