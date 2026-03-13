@@ -14,7 +14,7 @@
  * - Every prompt requires structured output with anti-hallucination directive
  * - Agent color assignment for UI consistency
  * - Auto-forge protocol for novel dimensions with no matching archetype
- * - MCP tool routing from ARCHETYPE_TOOL_ROUTING + web_search from WEB_SEARCH_ARCHETYPES
+ * - Data source tool routing from ToolRegistry + web_search from WEB_SEARCH_ARCHETYPES
  */
 
 import type {
@@ -32,9 +32,9 @@ import {
 import { getSkillRouter } from "./skill-router";
 import { AGENT_COLORS } from "../constants";
 import {
-  ARCHETYPE_TOOL_ROUTING,
   WEB_SEARCH_ARCHETYPES,
-} from "@/lib/mcp/config";
+  getToolRegistry,
+} from "@/lib/data-sources/registry";
 import { WEB_SEARCH_TOOL } from "@/lib/ai/client";
 
 // Re-export archetype registry for external access
@@ -151,16 +151,16 @@ ${SOURCE_TIER_REQUIREMENTS}
 
 /**
  * Resolve the complete tool list for an agent based on its archetype.
- * Combines MCP server tools from ARCHETYPE_TOOL_ROUTING with
+ * Combines in-process data source tools from ToolRegistry with
  * web_search from WEB_SEARCH_ARCHETYPES.
  */
 function resolveToolsForArchetype(archetype: string): string[] {
   const tools: string[] = [];
 
-  // MCP server tools from config
-  const mcpServers =
-    ARCHETYPE_TOOL_ROUTING[archetype as ArchetypeFamily] ?? [];
-  tools.push(...mcpServers);
+  // In-process data source tools from ToolRegistry
+  const registry = getToolRegistry();
+  const dataSourceTools = registry.getToolNamesForArchetype(archetype as ArchetypeFamily);
+  tools.push(...dataSourceTools);
 
   // Anthropic native web_search
   if (WEB_SEARCH_ARCHETYPES.has(archetype as ArchetypeFamily)) {

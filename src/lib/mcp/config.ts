@@ -11,8 +11,6 @@
  * gracefully — agents note unavailable tools in their `gaps` field.
  */
 
-import type { ArchetypeFamily } from "@/lib/pipeline/types";
-
 // ─── Server Config ──────────────────────────────────────────
 
 export interface MCPServerConfig {
@@ -77,62 +75,8 @@ export const MCP_SERVERS: Record<string, MCPServerConfig> = {
   },
 };
 
-// ─── Archetype → Server Routing ─────────────────────────────
-
-/**
- * Maps archetype families to the MCP server names they should have access to.
- * Archetypes not listed here get no MCP tools (only Anthropic native tools
- * like web_search if applicable).
- */
-export const ARCHETYPE_TOOL_ROUTING: Partial<
-  Record<ArchetypeFamily, string[]>
-> = {
-  "RESEARCHER-WEB": [], // Uses web_search native tool instead of MCP
-  "RESEARCHER-DATA": ["pubmed", "clinical_trials", "biorxiv"],
-  "RESEARCHER-DOMAIN": [
-    "pubmed",
-    "cms_coverage",
-    "icd10",
-    "npi_registry",
-    "clinical_trials",
-  ],
-  "RESEARCHER-LATERAL": ["pubmed", "biorxiv"],
-  "ANALYST-FINANCIAL": [],
-  "ANALYST-STRATEGIC": [],
-  "ANALYST-TECHNICAL": ["pubmed", "clinical_trials"],
-  "ANALYST-RISK": ["cms_coverage", "clinical_trials"],
-  "ANALYST-QUALITY": ["cms_coverage", "icd10"],
-  "CRITIC-FACTUAL": [], // Uses web_search native tool for fact-checking
-  "CRITIC-LOGICAL": [],
-  "CRITIC-STRATEGIC": [],
-  "CRITIC-EDITORIAL": [],
-  "CREATOR-WRITER": [],
-  "CREATOR-PRESENTER": [],
-  "CREATOR-TECHNICAL": [],
-  "CREATOR-PERSUADER": [],
-  SYNTHESIZER: [],
-  ARBITER: [],
-  "DEVILS-ADVOCATE": [],
-  FUTURIST: ["clinical_trials", "biorxiv"],
-  HISTORIAN: ["pubmed"],
-  "RED-TEAM": [],
-  "CUSTOMER-PROXY": ["npi_registry"],
-  "LEGISLATIVE-PIPELINE": ["cms_coverage"],
-  "REGULATORY-RADAR": ["cms_coverage", "icd10"],
-  "MACRO-CONTEXT": ["biorxiv"],
-};
-
-/**
- * Archetypes that should receive Anthropic's native web_search server tool.
- * This is separate from MCP tools — web_search is a first-party Anthropic
- * tool passed directly in the `tools` array of messages.create().
- */
-export const WEB_SEARCH_ARCHETYPES: Set<ArchetypeFamily> = new Set([
-  "RESEARCHER-WEB",
-  "CRITIC-FACTUAL",
-  "ANALYST-STRATEGIC",
-  "MACRO-CONTEXT",
-  "LEGISLATIVE-PIPELINE",
-  "REGULATORY-RADAR",
-  "RED-TEAM",
-]);
+// ─── Archetype → Tool Routing ────────────────────────────────
+// NOTE: Archetype-to-tool routing (ARCHETYPE_TOOL_ROUTING) and
+// WEB_SEARCH_ARCHETYPES have moved to src/lib/data-sources/registry.ts.
+// The ToolRegistry now owns all in-process tool routing.
+// MCP_SERVERS above is still used by MCPManager for remote MCP connections.
