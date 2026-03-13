@@ -13,6 +13,8 @@ import type { ArchetypeFamily } from "@/lib/pipeline/types";
 import type { DataSourceTool, ToolResult } from "./types";
 import { ResultCache } from "./cache";
 import { formatCitations } from "./format";
+import { openfdaTools } from "./tools/openfda.tools";
+import { drugSafetyResearchTool } from "./research/drug-safety";
 
 // ─── Archetype Routing ───────────────────────────────────────
 
@@ -37,6 +39,65 @@ export const WEB_SEARCH_ARCHETYPES: Set<ArchetypeFamily> = new Set([
   "REGULATORY-RADAR",
   "RED-TEAM",
 ]);
+
+// ─── Archetype Tool Routing ──────────────────────────────────
+// Maps each archetype family to the research (Layer 3) and granular (Layer 2)
+// tools it should have access to. Research tools are listed first so Claude
+// preferentially selects them.
+
+export const ARCHETYPE_TOOL_ROUTING: Record<string, {
+  research: string[];
+  granular: string[];
+}> = {
+  "RESEARCHER-DATA": {
+    research: ["research_clinical_evidence", "research_global_health", "research_market_dynamics"],
+    granular: ["search_bls_series", "search_census_data", "search_who_indicators"],
+  },
+  "RESEARCHER-DOMAIN": {
+    research: ["research_drug_safety", "research_coverage_policy", "research_clinical_evidence"],
+    granular: ["search_drug_labels", "search_adverse_events", "search_ncd"],
+  },
+  "ANALYST-RISK": {
+    research: ["research_drug_safety", "research_regulatory_landscape", "research_clinical_evidence", "research_coverage_policy"],
+    granular: ["search_adverse_events", "search_recalls", "search_federal_register"],
+  },
+  "ANALYST-FINANCIAL": {
+    research: ["research_company_position", "research_market_dynamics", "research_funding_landscape"],
+    granular: ["search_sec_filings", "get_company_facts", "search_bls_series"],
+  },
+  "ANALYST-STRATEGIC": {
+    research: ["research_company_position", "research_competitive_intel", "research_regulatory_landscape"],
+    granular: ["search_sec_filings", "search_federal_register", "search_congress_bills"],
+  },
+  "ANALYST-TECHNICAL": {
+    research: ["research_clinical_evidence", "research_patent_landscape", "research_drug_safety"],
+    granular: ["search_clinical_trials", "search_patents", "search_drug_labels"],
+  },
+  "ANALYST-QUALITY": {
+    research: ["research_quality_benchmarks", "research_coverage_policy", "research_global_health"],
+    granular: ["search_hcup_statistics", "search_ncd", "search_who_indicators"],
+  },
+  "LEGISLATIVE-PIPELINE": {
+    research: ["research_legislative_status", "research_regulatory_landscape", "research_coverage_policy"],
+    granular: ["search_congress_bills", "search_cbo_reports", "search_govinfo"],
+  },
+  "REGULATORY-RADAR": {
+    research: ["research_regulatory_landscape", "research_drug_safety", "research_coverage_policy"],
+    granular: ["search_federal_register", "search_drug_labels", "search_govinfo"],
+  },
+  "MACRO-CONTEXT": {
+    research: ["research_global_health", "research_market_dynamics", "research_quality_benchmarks"],
+    granular: ["search_bls_series", "search_census_data", "search_oecd_indicators"],
+  },
+  "FUTURIST": {
+    research: ["research_clinical_evidence", "research_patent_landscape", "research_competitive_intel"],
+    granular: ["search_clinical_trials", "search_patents", "search_biorxiv"],
+  },
+  "CUSTOMER-PROXY": {
+    research: ["research_provider_landscape", "research_market_dynamics"],
+    granular: ["search_npi_providers", "search_census_data"],
+  },
+};
 
 // ─── ToolRegistry ────────────────────────────────────────────
 
@@ -175,6 +236,19 @@ export class ToolRegistry {
   }
 }
 
+// ─── Tool Initialization ────────────────────────────────────
+
+function initializeAllTools(registry: ToolRegistry): void {
+  // Layer 2: Granular tools (vertical slice — more added in Task 15)
+  registry.registerTools(openfdaTools);
+
+  // Layer 3: Research tools (vertical slice — more added in Task 15)
+  registry.registerTool(drugSafetyResearchTool);
+
+  // Load archetype routing
+  registry.loadDefaultRouting(ARCHETYPE_TOOL_ROUTING);
+}
+
 // ─── Singleton ───────────────────────────────────────────────
 
 let registryInstance: ToolRegistry | null = null;
@@ -186,8 +260,7 @@ let registryInstance: ToolRegistry | null = null;
 export function getToolRegistry(): ToolRegistry {
   if (!registryInstance) {
     registryInstance = new ToolRegistry();
-    // Tools will be registered by tool modules importing this and calling registerTool
-    // The production routing will be loaded by the initialization code
+    initializeAllTools(registryInstance);
   }
   return registryInstance;
 }
