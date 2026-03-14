@@ -352,12 +352,8 @@ export async function executePipeline(
     await updateRunStatus(runId, "PRESENT");
     emitEvent({ type: "phase_change", phase: "PRESENT", message: "Generating HTML5 presentation..." });
 
-    const useAgentic = process.env.PRISM_AGENTIC_PRESENT === "true";
     const presentation = await withRetry(
-      () =>
-        useAgentic
-          ? presentOrchestrated({ synthesis, agentResults, blueprint, emitEvent, memoryBus })
-          : present({ synthesis, agentResults, blueprint, emitEvent, memoryBus }),
+      () => presentOrchestrated({ synthesis, agentResults, blueprint, emitEvent, memoryBus }),
       { maxRetries: 1, baseDelayMs: 3000, label: "PRESENT" },
     );
 
