@@ -341,6 +341,7 @@ export interface PresentInput {
   blueprint: Blueprint;
   emitEvent: (event: PipelineEvent) => void;
   memoryBus?: unknown;
+  capturedCalls?: import("./data-capture").CapturedToolCall[];
 }
 
 // ── Renderer & Content Output Types ──

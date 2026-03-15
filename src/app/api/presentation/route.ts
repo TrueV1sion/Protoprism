@@ -106,6 +106,7 @@ export async function POST(request: Request) {
 
     const events: PipelineEvent[] = [];
     const presentation = await present({
+      runId,
       synthesis,
       agentResults,
       blueprint,

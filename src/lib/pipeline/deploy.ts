@@ -33,6 +33,7 @@ import {
   type ArchetypeFamily,
 } from "./types";
 import { MemoryBus } from "./memory-bus";
+import { createToolCallCapture, type CapturedToolCall } from "./present/data-capture";
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export interface DeployInput {
 export interface DeployOutput {
   agentResults: AgentResult[];
   criticResult?: AgentResult; // CRITIC-FACTUAL result if depth >= 4
+  capturedCalls: CapturedToolCall[]; // MCP tool call data captured during execution
 }
 
 /** Kept for backward compatibility with index.ts re-exports */
@@ -131,6 +133,9 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
   const mcpManager = getMCPManager();
   await mcpManager.initialize();
 
+  // Shared array for data capture across all agents
+  const capturedCalls: CapturedToolCall[] = [];
+
   // Separate CRITIC-FACTUAL from other agents
   const criticAgents = agents.filter((a) => a.archetype === "CRITIC-FACTUAL");
   const regularAgents = agents.filter((a) => a.archetype !== "CRITIC-FACTUAL");
@@ -147,7 +152,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
   if (useWaves) {
     // Check abort before starting wave execution
     if (signal?.aborted) {
-      return { agentResults: [] };
+      return { agentResults: [], capturedCalls };
     }
     agentResults = await executeTwoWaves(
       regularAgents,
@@ -155,11 +160,12 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
       emitEvent,
       mcpManager,
       memoryBus,
+      capturedCalls,
     );
   } else {
     // Check abort before starting parallel execution
     if (signal?.aborted) {
-      return { agentResults: [] };
+      return { agentResults: [], capturedCalls };
     }
     // Standard parallel execution for MICRO/STANDARD
     agentResults = await executeParallel(
@@ -167,6 +173,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
       emitEvent,
       mcpManager,
       memoryBus,
+      capturedCalls,
     );
   }
 
@@ -206,6 +213,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
         criticWithClaims,
         emitEvent,
         mcpManager,
+        capturedCalls,
       );
     } catch (err) {
       console.error(
@@ -220,7 +228,7 @@ export async function deploy(input: DeployInput): Promise<DeployOutput> {
     }
   }
 
-  return { agentResults, criticResult };
+  return { agentResults, criticResult, capturedCalls };
 }
 
 // ─── Parallel Execution ─────────────────────────────────────
@@ -230,6 +238,7 @@ async function executeParallel(
   emitEvent: (event: PipelineEvent) => void,
   mcpManager: MCPManager,
   memoryBus?: MemoryBus,
+  capturedCalls?: CapturedToolCall[],
 ): Promise<AgentResult[]> {
   const settled = await Promise.allSettled(
     agents.map((agent) => {
@@ -239,7 +248,7 @@ async function executeParallel(
         archetype: agent.archetype,
         dimension: agent.dimension,
       });
-      return executeAgent(agent, emitEvent, mcpManager);
+      return executeAgent(agent, emitEvent, mcpManager, capturedCalls);
     }),
   );
 
@@ -261,6 +270,7 @@ async function executeTwoWaves(
   emitEvent: (event: PipelineEvent) => void,
   mcpManager: MCPManager,
   externalBus?: MemoryBus,
+  capturedCalls?: CapturedToolCall[],
 ): Promise<AgentResult[]> {
   const memoryBus = externalBus ?? new MemoryBus(blueprint.query);
   const midpoint = Math.ceil(agents.length / 2);
@@ -283,7 +293,7 @@ async function executeTwoWaves(
         archetype: agent.archetype,
         dimension: agent.dimension,
       });
-      return executeAgent(agent, emitEvent, mcpManager);
+      return executeAgent(agent, emitEvent, mcpManager, capturedCalls);
     }),
   );
 
@@ -316,7 +326,7 @@ async function executeTwoWaves(
         archetype: agent.archetype,
         dimension: agent.dimension,
       });
-      return executeAgent(agent, emitEvent, mcpManager);
+      return executeAgent(agent, emitEvent, mcpManager, capturedCalls);
     }),
   );
 
@@ -458,8 +468,18 @@ async function executeAgent(
   agent: ConstructedAgent,
   emitEvent: (event: PipelineEvent) => void,
   mcpManager: MCPManager,
+  capturedCalls?: CapturedToolCall[],
 ): Promise<AgentResult> {
   const client = getAnthropicClient();
+
+  // Set up data capture for MCP tool calls
+  const capture = capturedCalls
+    ? createToolCallCapture(
+        `deploy-${agent.name}`,
+        agent.name,
+        (call) => { capturedCalls.push(call); },
+      )
+    : null;
 
   // ─── Build tools array ────────────────────────────────────
 
@@ -621,10 +641,15 @@ async function executeAgent(
           }
 
           try {
-            const toolResult = await mcpManager.executeTool(
-              toolName,
-              toolInput,
-            );
+            const serverName = toolName.split("__")[0] ?? "unknown";
+            let toolResult: string;
+            if (capture) {
+              const wrappedExecute = capture.wrap(serverName, toolName,
+                (params) => mcpManager.executeTool(toolName, params as Record<string, unknown>));
+              toolResult = await wrappedExecute(toolInput);
+            } else {
+              toolResult = await mcpManager.executeTool(toolName, toolInput);
+            }
             toolResultContents.push({
               type: "tool_result",
               tool_use_id: toolBlock.id,

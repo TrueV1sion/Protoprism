@@ -38,11 +38,13 @@ import type { MemoryBus } from "./memory-bus";
 // ─── Types ──────────────────────────────────────────────────
 
 export interface PresentInput {
+  runId: string;
   synthesis: SynthesisResult;
   agentResults: AgentResult[];
   blueprint: Blueprint;
   emitEvent: (event: PipelineEvent) => void;
   memoryBus?: MemoryBus;
+  capturedCalls?: import("./present/data-capture").CapturedToolCall[];
 }
 
 // ─── Presentation System Spec Loader ────────────────────────

@@ -167,7 +167,7 @@ export async function executePipeline(
       { maxRetries: 2, baseDelayMs: 2000, signal, label: "DEPLOY" },
     );
 
-    const { agentResults, criticResult } = deployResult;
+    const { agentResults, criticResult, capturedCalls } = deployResult;
 
     for (const result of agentResults) {
       totalTokens += result.tokensUsed;
@@ -353,114 +353,94 @@ export async function executePipeline(
     emitEvent({ type: "phase_change", phase: "PRESENT", message: "Generating HTML5 presentation..." });
 
     const presentation = await withRetry(
-      () => presentOrchestrated({ synthesis, agentResults, blueprint, emitEvent, memoryBus }),
+      () => presentOrchestrated({ runId, synthesis, agentResults, blueprint, emitEvent, memoryBus, capturedCalls }),
       { maxRetries: 1, baseDelayMs: 3000, label: "PRESENT" },
     );
 
-    const decksDir = join(process.cwd(), "public", "decks");
-    mkdirSync(decksDir, { recursive: true });
-    const filename = `${runId}.html`;
-    const htmlPath = `/decks/${filename}`;
+    // If the orchestrator already finalized (htmlPath set), skip post-processing.
+    // Otherwise (legacy fallback), do post-processing here.
+    let htmlPath: string;
+    let finalHtml: string;
 
-    let finalHtml = presentation.html;
+    if (presentation.htmlPath) {
+      // Agentic pipeline already handled: CSS/JS inlining, animation baking,
+      // counter baking, truncation recovery, file write, and quality telemetry.
+      htmlPath = presentation.htmlPath;
+      finalHtml = presentation.html;
+    } else {
+      // Legacy fallback — apply post-processing inline
+      const decksDir = join(process.cwd(), "public", "decks");
+      mkdirSync(decksDir, { recursive: true });
+      const filename = `${runId}.html`;
+      htmlPath = `/decks/${filename}`;
+      finalHtml = presentation.html;
 
-    // Inline CSS and JS so the deck is fully self-contained and shareable
-    const publicDir = join(process.cwd(), "public");
-    const cssPath = join(publicDir, "styles", "presentation.css");
-    const jsPath = join(publicDir, "js", "presentation.js");
+      const publicDir = join(process.cwd(), "public");
+      const cssPath = join(publicDir, "styles", "presentation.css");
+      const jsPath = join(publicDir, "js", "presentation.js");
 
-    if (!finalHtml.includes("presentation.css") && !finalHtml.includes("<style>")) {
-      try {
-        const css = readFileSync(cssPath, "utf-8");
-        if (finalHtml.includes("</head>")) {
-          finalHtml = finalHtml.replace(
-            "</head>",
-            `  <style>\n${css}\n  </style>\n</head>`,
-          );
-        }
-      } catch {
-        // Fallback to external link if CSS file not found
-        if (finalHtml.includes("</head>")) {
-          finalHtml = finalHtml.replace(
-            "</head>",
-            `  <link rel="stylesheet" href="/styles/presentation.css">\n</head>`,
-          );
+      if (!finalHtml.includes("presentation.css") && !finalHtml.includes("<style>")) {
+        try {
+          const css = readFileSync(cssPath, "utf-8");
+          if (finalHtml.includes("</head>")) {
+            finalHtml = finalHtml.replace("</head>", `  <style>\n${css}\n  </style>\n</head>`);
+          }
+        } catch {
+          if (finalHtml.includes("</head>")) {
+            finalHtml = finalHtml.replace("</head>", `  <link rel="stylesheet" href="/styles/presentation.css">\n</head>`);
+          }
         }
       }
+
+      if (!finalHtml.includes("presentation.js")) {
+        try {
+          const js = readFileSync(jsPath, "utf-8");
+          if (finalHtml.includes("</body>")) {
+            finalHtml = finalHtml.replace("</body>", `  <script>\n${js}\n  </script>\n</body>`);
+          }
+        } catch {
+          if (finalHtml.includes("</body>")) {
+            finalHtml = finalHtml.replace("</body>", `  <script src="/js/presentation.js" defer></script>\n</body>`);
+          }
+        }
+      }
+
+      finalHtml = finalHtml.replace(
+        /class="([^"]*\b(anim|anim-scale|anim-blur)\b[^"]*)"/g,
+        (match, classes) => classes.includes("visible") ? match : `class="${classes} visible"`,
+      );
+      finalHtml = finalHtml.replace(
+        /class="([^"]*\bbar-fill\b[^"]*)"/g,
+        (match, classes) => classes.includes("animate") ? match : `class="${classes} animate"`,
+      );
+      finalHtml = finalHtml.replace(
+        /class="([^"]*\b(bar-chart|line-chart|donut-chart|sparkline)\b[^"]*)"/g,
+        (match, classes) => classes.includes("is-visible") ? match : `class="${classes} is-visible"`,
+      );
+      finalHtml = finalHtml.replace(
+        /(<span[^>]*class="[^"]*stat-number[^"]*"[^>]*data-target="(\d+)"[^>]*>)(\d+)(<\/span>)/g,
+        (_match, openTag, target, _currentText, closeTag) => `${openTag}${target}${closeTag}`,
+      );
+      finalHtml = finalHtml.replace(
+        /(<span[^>]*class="[^"]*stat-number[^"]*"[^>]*data-target="(\d+)"[^>]*(?:data-prefix="([^"]*)")?[^>]*(?:data-suffix="([^"]*)")?[^>]*>)(\d+)(<\/span>)/g,
+        (_match, openTag, target, prefix, suffix, _currentText, closeTag) => {
+          const val = parseInt(target).toLocaleString();
+          return `${openTag}${prefix || ""}${val}${suffix || ""}${closeTag}`;
+        },
+      );
+
+      if (!finalHtml.includes("</body>")) {
+        const openSections = (finalHtml.match(/<section/g) || []).length;
+        const closedSections = (finalHtml.match(/<\/section>/g) || []).length;
+        const unclosedSections = openSections - closedSections;
+        if (unclosedSections > 0) {
+          finalHtml += `\n</div></div></section>`.repeat(unclosedSections);
+        }
+        finalHtml += `\n</body>\n</html>`;
+      }
+
+      writeFileSync(join(process.cwd(), "public", "decks", `${runId}.html`), finalHtml, "utf-8");
     }
-
-    if (!finalHtml.includes("presentation.js")) {
-      try {
-        const js = readFileSync(jsPath, "utf-8");
-        if (finalHtml.includes("</body>")) {
-          finalHtml = finalHtml.replace(
-            "</body>",
-            `  <script>\n${js}\n  </script>\n</body>`,
-          );
-        }
-      } catch {
-        // Fallback to external script if JS file not found
-        if (finalHtml.includes("</body>")) {
-          finalHtml = finalHtml.replace(
-            "</body>",
-            `  <script src="/js/presentation.js" defer></script>\n</body>`,
-          );
-        }
-      }
-    }
-
-    // Make all animated elements visible immediately in standalone decks
-    // (In-app, the IntersectionObserver handles this; standalone files need it baked in)
-    finalHtml = finalHtml.replace(
-      /class="([^"]*\b(anim|anim-scale|anim-blur)\b[^"]*)"/g,
-      (match, classes) => {
-        if (classes.includes("visible")) return match;
-        return `class="${classes} visible"`;
-      }
-    );
-    finalHtml = finalHtml.replace(
-      /class="([^"]*\bbar-fill\b[^"]*)"/g,
-      (match, classes) => {
-        if (classes.includes("animate")) return match;
-        return `class="${classes} animate"`;
-      }
-    );
-    // Add is-visible to chart containers so CSS animations trigger
-    finalHtml = finalHtml.replace(
-      /class="([^"]*\b(bar-chart|line-chart|donut-chart|sparkline)\b[^"]*)"/g,
-      (match, classes) => {
-        if (classes.includes("is-visible")) return match;
-        return `class="${classes} is-visible"`;
-      }
-    );
-    // Bake counter target values directly into text so they show without JS animation
-    finalHtml = finalHtml.replace(
-      /(<span[^>]*class="[^"]*stat-number[^"]*"[^>]*data-target="(\d+)"[^>]*>)(\d+)(<\/span>)/g,
-      (match, openTag, target, _currentText, closeTag) => {
-        return `${openTag}${target}${closeTag}`;
-      }
-    );
-    // Also handle data-prefix and data-suffix on counters
-    finalHtml = finalHtml.replace(
-      /(<span[^>]*class="[^"]*stat-number[^"]*"[^>]*data-target="(\d+)"[^>]*(?:data-prefix="([^"]*)")?[^>]*(?:data-suffix="([^"]*)")?[^>]*>)(\d+)(<\/span>)/g,
-      (match, openTag, target, prefix, suffix, _currentText, closeTag) => {
-        const val = parseInt(target).toLocaleString();
-        return `${openTag}${prefix || ""}${val}${suffix || ""}${closeTag}`;
-      }
-    );
-
-    // Fix unclosed sections if </body> was missing
-    if (!finalHtml.includes("</body>")) {
-      const openSections = (finalHtml.match(/<section/g) || []).length;
-      const closedSections = (finalHtml.match(/<\/section>/g) || []).length;
-      const unclosedSections = openSections - closedSections;
-      if (unclosedSections > 0) {
-        finalHtml += `\n</div></div></section>`.repeat(unclosedSections);
-      }
-      finalHtml += `\n</body>\n</html>`;
-    }
-
-    writeFileSync(join(decksDir, filename), finalHtml, "utf-8");
 
     await prisma.presentation.create({
       data: {

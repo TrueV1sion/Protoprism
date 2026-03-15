@@ -214,6 +214,8 @@ export const PresentationResultSchema = z.object({
   title: z.string(),
   subtitle: z.string(),
   slideCount: z.number(),
+  // Set by orchestrator when finalize() already handled post-processing + file write
+  htmlPath: z.string().optional(),
   // Optional quality/telemetry fields from agentic pipeline
   quality: z.object({
     overall: z.number(),
