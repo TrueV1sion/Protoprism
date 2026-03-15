@@ -1,12 +1,15 @@
 import type {
   DataPoint,
   ChartData,
+  ChartRole,
   DonutChartData,
   DonutSegment,
   BarChartData,
   SparklineData,
   CounterData,
   HorizontalBarData,
+  LineChartData,
+  EnrichedDataset,
 } from "./types";
 
 const CHART_COLORS = [
@@ -54,6 +57,12 @@ export function compileCharts(dataPoints: DataPoint[]): ChartData[] {
     }
   }
 
+  // Process line-point (line chart with clip-path reveal animation)
+  const linePoints = groups.get("line-point");
+  if (linePoints?.length) {
+    results.push(compileLine(linePoints));
+  }
+
   // Process bar-fill-percent (horizontal bars — all grouped into one HorizontalBarData)
   const hbarPoints = groups.get("bar-fill-percent");
   if (hbarPoints?.length) {
@@ -61,6 +70,39 @@ export function compileCharts(dataPoints: DataPoint[]): ChartData[] {
   }
 
   return results;
+}
+
+/**
+ * Adapter: compile a chart from an EnrichedDataset.
+ * Converts dataset values to DataPoint[] format and delegates to compileCharts().
+ */
+export function compileChartFromDataset(
+  dataset: EnrichedDataset,
+  chartType: string,
+): ChartData {
+  const dataPoints: DataPoint[] = dataset.values.map(v => ({
+    label: v.period,
+    value: v.value,
+    chartRole: mapChartTypeToRole(chartType),
+  }));
+
+  const compiled = compileCharts(dataPoints);
+  if (compiled.length === 0) {
+    throw new Error(`Failed to compile ${chartType} chart from dataset ${dataset.id}`);
+  }
+  return compiled[0];
+}
+
+function mapChartTypeToRole(chartType: string): ChartRole {
+  switch (chartType) {
+    case "line": return "line-point";
+    case "donut": return "donut-segment";
+    case "bar": return "bar-value";
+    case "sparkline": return "sparkline-point";
+    case "counter": return "counter-target";
+    case "horizontal-bar": return "bar-fill-percent";
+    default: return "bar-value";
+  }
 }
 
 function compileDonut(points: DataPoint[]): DonutChartData {
@@ -141,11 +183,11 @@ function compileBar(points: DataPoint[]): BarChartData {
   ).join("\n    ");
 
   const valueLabels = bars.map(b =>
-    `<text x="${b.x + barWidth / 2}" y="${b.y - 4}" text-anchor="middle" class="bar-value-label" font-size="10">${b.value}${points[bars.indexOf(b)]?.unit ?? ""}</text>`
+    `<text x="${b.x + barWidth / 2}" y="${b.y - 4}" text-anchor="middle" fill="var(--text-primary)" font-size="10">${b.value}${points[bars.indexOf(b)]?.unit ?? ""}</text>`
   ).join("\n    ");
 
   const catLabels = bars.map(b =>
-    `<text x="${b.x + barWidth / 2}" y="${chartBottom + 14}" text-anchor="middle" class="bar-category-label" font-size="9">${b.label}</text>`
+    `<text x="${b.x + barWidth / 2}" y="${chartBottom + 14}" text-anchor="middle" fill="var(--text-secondary)" font-size="9">${b.label}</text>`
   ).join("\n    ");
 
   const svgFragment = `<svg class="bar-chart" viewBox="0 0 ${svgWidth} ${svgHeight}" style="width:100%;max-width:${svgWidth}px">
@@ -200,7 +242,7 @@ function compileSparkline(points: DataPoint[]): SparklineData {
 }
 
 function compileCounter(pt: DataPoint): CounterData {
-  const colorClass = "stat-highlight";
+  const colorClass = "cyan";
   const prefix = pt.prefix ?? "";
   const suffix = pt.unit ?? "";
 
@@ -216,6 +258,54 @@ function compileCounter(pt: DataPoint): CounterData {
     suffix: suffix || undefined,
     colorClass,
     htmlFragment,
+  };
+}
+
+function compileLine(points: DataPoint[]): LineChartData {
+  const svgWidth = 400;
+  const svgHeight = 200;
+  const padX = 20;
+  const padY = 20;
+
+  const values = points.map(p => p.value);
+  const minVal = Math.min(...values);
+  const maxVal = Math.max(...values);
+  const range = maxVal - minVal || 1;
+
+  const n = points.length;
+  const coordPairs = points.map((pt, i) => {
+    const x = +(padX + (i / (n - 1)) * (svgWidth - 2 * padX)).toFixed(0);
+    const y = +(padY + (1 - (pt.value - minVal) / range) * (svgHeight - 2 * padY)).toFixed(0);
+    return { x, y };
+  });
+
+  const pointsStr = coordPairs.map(p => `${p.x},${p.y}`).join(" ");
+
+  // Show data-point circles at every other point (or all if ≤ 5)
+  const showAll = points.length <= 5;
+  const dotCircles = coordPairs
+    .filter((_, i) => showAll || i % 2 === 0 || i === coordPairs.length - 1)
+    .map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="var(--accent-bright)" />`)
+    .join("\n      ");
+
+  const svgFragment = `<svg class="line-chart" viewBox="0 0 ${svgWidth} ${svgHeight}" style="max-width:100%">
+  <defs>
+    <clipPath id="line-reveal">
+      <rect class="clip-rect" x="0" y="0" width="0" height="${svgHeight}" />
+    </clipPath>
+  </defs>
+  <polyline points="${pointsStr}"
+    fill="none" stroke="var(--accent-bright)" stroke-width="2.5"
+    clip-path="url(#line-reveal)" />
+  <g class="data-points">
+      ${dotCircles}
+  </g>
+</svg>`;
+
+  return {
+    type: "line",
+    points: pointsStr,
+    svgFragment,
   };
 }
 
@@ -237,7 +327,7 @@ function compileHorizontalBar(points: DataPoint[]): HorizontalBarData {
   </div>`
   ).join("\n  ");
 
-  const htmlFragment = `<div class="horizontal-bar-chart">
+  const htmlFragment = `<div class="comparison-bars">
   ${rowsHtml}
 </div>`;
 

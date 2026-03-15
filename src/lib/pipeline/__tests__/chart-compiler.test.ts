@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { compileCharts } from "../present/chart-compiler";
-import type { DataPoint, DonutChartData, BarChartData, SparklineData, CounterData, HorizontalBarData } from "../present/types";
+import { compileCharts, compileChartFromDataset } from "../present/chart-compiler";
+import type { DataPoint, DonutChartData, BarChartData, SparklineData, CounterData, HorizontalBarData, LineChartData, EnrichedDataset } from "../present/types";
 
 describe("chart-compiler: donut charts", () => {
   const donutPoints: DataPoint[] = [
@@ -159,6 +159,37 @@ describe("chart-compiler: horizontal bars", () => {
   });
 });
 
+describe("chart-compiler: line charts", () => {
+  const linePoints: DataPoint[] = [
+    { label: "Q1", value: 20, chartRole: "line-point" },
+    { label: "Q2", value: 35, chartRole: "line-point" },
+    { label: "Q3", value: 28, chartRole: "line-point" },
+    { label: "Q4", value: 45, chartRole: "line-point" },
+  ];
+
+  it("produces a line ChartData", () => {
+    const result = compileCharts(linePoints);
+    const line = result.find((c) => c.type === "line") as LineChartData;
+    expect(line).toBeDefined();
+    expect(line.points).toContain(",");
+  });
+
+  it("generates SVG with line-chart class and clip-path reveal", () => {
+    const result = compileCharts(linePoints);
+    const line = result.find((c) => c.type === "line") as LineChartData;
+    expect(line.svgFragment).toContain('class="line-chart"');
+    expect(line.svgFragment).toContain('class="clip-rect"');
+    expect(line.svgFragment).toContain('class="data-points"');
+  });
+
+  it("includes polyline and data point circles", () => {
+    const result = compileCharts(linePoints);
+    const line = result.find((c) => c.type === "line") as LineChartData;
+    expect(line.svgFragment).toContain("<polyline");
+    expect(line.svgFragment).toContain("<circle");
+  });
+});
+
 describe("chart-compiler: value sanitization", () => {
   it("strips currency prefix and suffix from values", () => {
     const points: DataPoint[] = [
@@ -180,5 +211,53 @@ describe("chart-compiler: value sanitization", () => {
     expect(result.some(c => c.type === "donut")).toBe(true);
     expect(result.some(c => c.type === "bar")).toBe(true);
     expect(result.some(c => c.type === "counter")).toBe(true);
+  });
+});
+
+describe("Chart Compiler — DatasetRegistry", () => {
+  it("compiles line chart from time_series dataset", () => {
+    const dataset: EnrichedDataset = {
+      id: "d1",
+      sourceCallId: "c1",
+      metricName: "revenue",
+      dataShape: "time_series",
+      densityTier: "medium",
+      values: [
+        { period: "FY2022", value: 743 },
+        { period: "FY2023", value: 812 },
+        { period: "FY2024", value: 872 },
+      ],
+      computed: { min: 743, max: 872, mean: 809, trend: "up" },
+      sourceLabel: "SEC EDGAR",
+      chartWorthiness: 50,
+    };
+
+    const chart = compileChartFromDataset(dataset, "line");
+    expect(chart.type).toBe("line");
+    expect(chart.svgFragment).toContain("<svg");
+    expect(chart.svgFragment).toContain("polyline");
+  });
+
+  it("compiles donut chart from composition dataset", () => {
+    const dataset: EnrichedDataset = {
+      id: "d2",
+      sourceCallId: "c2",
+      metricName: "segment_revenue",
+      dataShape: "composition",
+      densityTier: "medium",
+      values: [
+        { period: "Payer", value: 45 },
+        { period: "Provider", value: 30 },
+        { period: "LifeSci", value: 15 },
+        { period: "Gov", value: 10 },
+      ],
+      computed: { min: 10, max: 45, mean: 25 },
+      sourceLabel: "10-K",
+      chartWorthiness: 60,
+    };
+
+    const chart = compileChartFromDataset(dataset, "donut");
+    expect(chart.type).toBe("donut");
+    expect(chart.svgFragment).toContain("<svg");
   });
 });
