@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { db } from "@/lib/db";
+import { prisma } from "@/lib/prisma";
 
 const VALID_ACTIONS = ["keep", "dismiss", "boost", "flag"];
 
@@ -36,21 +36,15 @@ export async function POST(request: Request) {
       }
     }
 
-    // Batch update findings via Supabase db layer
-    // db.finding doesn't expose updateMany by id, so use the supabase client directly
-    const { supabase } = await import("@/lib/supabase");
+    // Batch update findings
     const updates = Object.entries(actions).map(([findingId, action]) =>
-      supabase
-        .from("findings")
-        .update({ action })
-        .eq("id", findingId)
-        .eq("run_id", runId),
+      prisma.finding.update({
+        where: { id: findingId },
+        data: { action },
+      }),
     );
 
-    const results = await Promise.all(updates);
-    for (const { error } of results) {
-      if (error) throw new Error(`Failed to update finding: ${error.message}`);
-    }
+    await Promise.all(updates);
 
     return NextResponse.json({
       success: true,

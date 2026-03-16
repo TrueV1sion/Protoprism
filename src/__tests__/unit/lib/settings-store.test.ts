@@ -7,17 +7,17 @@
  * - loadSettings returns defaults on database error
  * - saveSettings upserts settings as JSON with correct args
  *
- * Uses vi.mock to stub @/lib/db.
+ * Uses vi.mock to stub @/lib/prisma.
  */
 
 import { describe, it, expect, vi, beforeEach } from "vitest";
 
-// Create mock functions for the db methods we use
+// Create mock functions for the prisma methods we use
 const mockFindUnique = vi.fn();
 const mockUpsert = vi.fn();
 
-vi.mock("@/lib/db", () => ({
-  db: {
+vi.mock("@/lib/prisma", () => ({
+  prisma: {
     settings: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
       upsert: (...args: unknown[]) => mockUpsert(...args),
@@ -110,7 +110,7 @@ describe("loadSettings", () => {
 
     await loadSettings();
 
-    expect(mockFindUnique).toHaveBeenCalledWith("default");
+    expect(mockFindUnique).toHaveBeenCalledWith({ where: { id: "default" } });
   });
 });
 
@@ -132,8 +132,10 @@ describe("saveSettings", () => {
 
     const result = await saveSettings(settings);
 
-    expect(mockUpsert).toHaveBeenCalledWith("default", {
-      data: JSON.stringify(settings),
+    expect(mockUpsert).toHaveBeenCalledWith({
+      where: { id: "default" },
+      update: { data: JSON.stringify(settings) },
+      create: { id: "default", data: JSON.stringify(settings) },
     });
 
     expect(result).toEqual(settings);
@@ -168,7 +170,7 @@ describe("saveSettings", () => {
     await saveSettings(settings);
 
     const callArgs = mockUpsert.mock.calls[0];
-    const serialized = callArgs[1].data;
+    const serialized = callArgs[0].update.data;
 
     // Verify the serialized JSON can be parsed back
     const parsed = JSON.parse(serialized as string);
