@@ -10,11 +10,11 @@ function PlatformContent({ children }: { children: ReactNode }) {
   const { collapsed } = useSidebar();
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="h-screen flex flex-col overflow-hidden">
       <Sidebar />
       <PlatformHeader />
       <motion.main
-        className="flex-1 flex flex-col pt-[68px]"
+        className="flex-1 flex flex-col pt-[68px] min-h-0"
         animate={{ marginLeft: collapsed ? 64 : 256 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >

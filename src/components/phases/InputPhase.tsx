@@ -24,13 +24,13 @@ export default function InputPhase({
   onOpenSettings,
 }: InputPhaseProps) {
   return (
-    <div className="flex-1 relative overflow-hidden text-white selection:bg-cyan-500/30">
-      <div className="absolute inset-0 pointer-events-none">
+    <div className="flex-1 relative overflow-y-auto overflow-x-hidden text-white selection:bg-cyan-500/30">
+      <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute inset-0 bg-gradient-to-r from-black via-black/55 to-transparent" />
         <div className="absolute inset-0 bg-gradient-to-t from-[#030712] via-transparent to-transparent" />
       </div>
 
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-8 md:pb-12 h-full flex flex-col gap-8">
+      <div className="relative z-10 max-w-[1800px] mx-auto px-4 md:px-8 pt-8 md:pt-12 pb-8 md:pb-12 flex flex-col gap-8">
         <motion.section
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

@@ -54,7 +54,7 @@ export default function PhaseTransition({
           duration,
           ease: [0.25, 0.46, 0.45, 0.94], // easeOutQuad
         }}
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-h-0"
       >
         {children}
       </motion.div>

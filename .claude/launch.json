@@ -5,7 +5,13 @@
       "name": "next-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 3000
+      "autoPort": true
+    },
+    {
+      "name": "next-dev-worktree",
+      "runtimeExecutable": "bash",
+      "runtimeArgs": ["-c", "cd /Users/jared.peck/Desktop/Protoprism/.claude/worktrees/platform-shell && npm run dev"],
+      "autoPort": true
     },
     {
       "name": "mcp-openfda",
