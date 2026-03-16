@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Send, Settings as SettingsIcon, Sparkles, Play, Info } from "lucide-react";
+import MissionFeed from "@/components/MissionFeed";
 
 interface InputPhaseProps {
   query: string;
@@ -107,6 +108,10 @@ export default function InputPhase({
           </form>
         </motion.section>
 
+        {/* Mission Feed — active + recent runs */}
+        <MissionFeed />
+
+        {/* Starter Queries */}
         <motion.section
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}

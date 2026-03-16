@@ -180,7 +180,7 @@ export default function CompletePhase({
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-prism-sky/15 text-prism-sky border border-prism-sky/30 uppercase tracking-[0.08em]">
                     {e.type}
                   </span>
-                  <span className="text-[10px] text-prism-muted font-mono">via {e.contributingAgents.join(", ")}</span>
+                  <span className="text-[10px] text-prism-muted font-mono">via {(e.contributingAgents ?? []).join(", ")}</span>
                 </div>
                 <p className="text-sm text-prism-text leading-relaxed">{e.insight}</p>
                 <div className="flex flex-wrap items-center gap-3 mt-3 text-[10px] font-mono text-prism-muted uppercase tracking-[0.06em]">
