@@ -4,17 +4,13 @@
  * Tests validate:
  * - MCP_SERVERS registry defines all 21 MCP servers (Tier 1–3)
  * - Every server has required config fields (description, available, transport)
- * - ARCHETYPE_TOOL_ROUTING maps archetypes to correct server sets
- * - All referenced servers in routing exist in MCP_SERVERS
- * - WEB_SEARCH_ARCHETYPES membership
+ *
+ * NOTE: ARCHETYPE_TOOL_ROUTING and WEB_SEARCH_ARCHETYPES have moved to
+ * src/lib/data-sources/registry.ts and are tested in the registry tests.
  */
 
 import { describe, it, expect } from "vitest";
-import {
-  MCP_SERVERS,
-  ARCHETYPE_TOOL_ROUTING,
-  WEB_SEARCH_ARCHETYPES,
-} from "@/lib/mcp/config";
+import { MCP_SERVERS } from "@/lib/mcp/config";
 
 // ─── MCP_SERVERS Registry ──────────────────────────────────
 
@@ -81,102 +77,5 @@ describe("MCP_SERVERS", () => {
     for (const name of EXPECTED_SERVERS) {
       expect(MCP_SERVERS[name].available).toBe(true);
     }
-  });
-});
-
-// ─── ARCHETYPE_TOOL_ROUTING ────────────────────────────────
-
-describe("ARCHETYPE_TOOL_ROUTING", () => {
-  it("maps RESEARCHER-DATA to pubmed, clinical_trials, biorxiv and additional data servers", () => {
-    const servers = ARCHETYPE_TOOL_ROUTING["RESEARCHER-DATA"];
-    expect(servers).toBeDefined();
-    expect(servers).toEqual(
-      expect.arrayContaining(["pubmed", "clinical_trials", "biorxiv"])
-    );
-    expect(servers).toHaveLength(8);
-  });
-
-  it("maps RESEARCHER-DOMAIN to pubmed, cms_coverage, icd10, npi_registry, clinical_trials and more", () => {
-    const servers = ARCHETYPE_TOOL_ROUTING["RESEARCHER-DOMAIN"];
-    expect(servers).toBeDefined();
-    expect(servers).toEqual(
-      expect.arrayContaining([
-        "pubmed",
-        "cms_coverage",
-        "icd10",
-        "npi_registry",
-        "clinical_trials",
-      ])
-    );
-    expect(servers).toHaveLength(8);
-  });
-
-  it("ANALYST-FINANCIAL maps to sec_edgar, bls_data, cbo, sam_gov, ahrq_hcup", () => {
-    const servers = ARCHETYPE_TOOL_ROUTING["ANALYST-FINANCIAL"];
-    expect(servers).toBeDefined();
-    expect(servers).toEqual(
-      expect.arrayContaining([
-        "sec_edgar",
-        "bls_data",
-        "cbo",
-        "sam_gov",
-        "ahrq_hcup",
-      ])
-    );
-    expect(servers).toHaveLength(5);
-  });
-
-  it("RESEARCHER-WEB has empty array (uses web_search native tool)", () => {
-    const servers = ARCHETYPE_TOOL_ROUTING["RESEARCHER-WEB"];
-    expect(servers).toBeDefined();
-    expect(servers).toEqual([]);
-  });
-
-  it("CRITIC-FACTUAL has empty array (uses web_search native tool)", () => {
-    const servers = ARCHETYPE_TOOL_ROUTING["CRITIC-FACTUAL"];
-    expect(servers).toBeDefined();
-    expect(servers).toEqual([]);
-  });
-
-  describe("all referenced servers exist in MCP_SERVERS", () => {
-    const serverNames = Object.keys(MCP_SERVERS);
-
-    for (const [archetype, servers] of Object.entries(ARCHETYPE_TOOL_ROUTING)) {
-      if (servers && servers.length > 0) {
-        it(`${archetype} references only valid servers`, () => {
-          for (const server of servers) {
-            expect(serverNames).toContain(server);
-          }
-        });
-      }
-    }
-  });
-});
-
-// ─── WEB_SEARCH_ARCHETYPES ─────────────────────────────────
-
-describe("WEB_SEARCH_ARCHETYPES", () => {
-  it("includes RESEARCHER-WEB", () => {
-    expect(WEB_SEARCH_ARCHETYPES.has("RESEARCHER-WEB")).toBe(true);
-  });
-
-  it("includes CRITIC-FACTUAL", () => {
-    expect(WEB_SEARCH_ARCHETYPES.has("CRITIC-FACTUAL")).toBe(true);
-  });
-
-  it("does NOT include CRITIC-LOGICAL", () => {
-    expect(WEB_SEARCH_ARCHETYPES.has("CRITIC-LOGICAL")).toBe(false);
-  });
-
-  it("does NOT include ANALYST-FINANCIAL", () => {
-    expect(WEB_SEARCH_ARCHETYPES.has("ANALYST-FINANCIAL")).toBe(false);
-  });
-
-  it("includes ANALYST-STRATEGIC", () => {
-    expect(WEB_SEARCH_ARCHETYPES.has("ANALYST-STRATEGIC")).toBe(true);
-  });
-
-  it("is a Set instance", () => {
-    expect(WEB_SEARCH_ARCHETYPES).toBeInstanceOf(Set);
   });
 });

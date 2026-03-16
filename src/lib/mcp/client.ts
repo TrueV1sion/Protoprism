@@ -14,12 +14,42 @@ import Anthropic from "@anthropic-ai/sdk";
 
 import type { ArchetypeFamily } from "@/lib/pipeline/types";
 import { WEB_SEARCH_TOOL } from "@/lib/ai/client";
-import {
-  MCP_SERVERS,
-  ARCHETYPE_TOOL_ROUTING,
-  WEB_SEARCH_ARCHETYPES,
-  type MCPServerConfig,
-} from "./config";
+import { WEB_SEARCH_ARCHETYPES } from "@/lib/data-sources/registry";
+import { MCP_SERVERS, type MCPServerConfig } from "./config";
+
+// ─── MCP-Level Archetype → Server Routing ─────────────────────
+// Maps archetype families to the MCP server names they need.
+// Separate from ToolRegistry's ARCHETYPE_TOOL_ROUTING (in-process tool names).
+// This routing is only for remote MCP servers managed by MCPManager.
+const MCP_ARCHETYPE_SERVERS: Partial<Record<ArchetypeFamily, string[]>> = {
+  "RESEARCHER-WEB": [],
+  "RESEARCHER-DATA": ["pubmed", "clinical_trials", "biorxiv"],
+  "RESEARCHER-DOMAIN": ["pubmed", "cms_coverage", "icd10", "npi_registry", "clinical_trials"],
+  "RESEARCHER-LATERAL": ["pubmed", "biorxiv"],
+  "ANALYST-FINANCIAL": [],
+  "ANALYST-STRATEGIC": [],
+  "ANALYST-TECHNICAL": ["pubmed", "clinical_trials"],
+  "ANALYST-RISK": ["cms_coverage", "clinical_trials"],
+  "ANALYST-QUALITY": ["cms_coverage", "icd10"],
+  "CRITIC-FACTUAL": [],
+  "CRITIC-LOGICAL": [],
+  "CRITIC-STRATEGIC": [],
+  "CRITIC-EDITORIAL": [],
+  "CREATOR-WRITER": [],
+  "CREATOR-PRESENTER": [],
+  "CREATOR-TECHNICAL": [],
+  "CREATOR-PERSUADER": [],
+  SYNTHESIZER: [],
+  ARBITER: [],
+  "DEVILS-ADVOCATE": [],
+  FUTURIST: ["clinical_trials", "biorxiv"],
+  HISTORIAN: ["pubmed"],
+  "RED-TEAM": [],
+  "CUSTOMER-PROXY": ["npi_registry"],
+  "LEGISLATIVE-PIPELINE": ["cms_coverage"],
+  "REGULATORY-RADAR": ["cms_coverage", "icd10"],
+  "MACRO-CONTEXT": ["biorxiv"],
+};
 
 // ─── Types ──────────────────────────────────────────────────
 
@@ -175,7 +205,7 @@ export class MCPManager {
     const tools: Anthropic.Messages.ToolUnion[] = [];
 
     // Add MCP-sourced tools
-    const serverNames = ARCHETYPE_TOOL_ROUTING[archetype] ?? [];
+    const serverNames = MCP_ARCHETYPE_SERVERS[archetype] ?? [];
     for (const serverName of serverNames) {
       const server = this.servers.get(serverName);
       if (!server) continue;
@@ -203,7 +233,7 @@ export class MCPManager {
    * `gaps` output.
    */
   getGapsForArchetype(archetype: ArchetypeFamily): string[] {
-    const serverNames = ARCHETYPE_TOOL_ROUTING[archetype] ?? [];
+    const serverNames = MCP_ARCHETYPE_SERVERS[archetype] ?? [];
     const gaps: string[] = [];
 
     for (const name of serverNames) {
@@ -216,6 +246,11 @@ export class MCPManager {
     }
 
     return gaps;
+  }
+
+  /** Check if a specific MCP server is connected and available. */
+  isServerAvailable(serverName: string): boolean {
+    return this.servers.has(serverName) && !this.unavailableServers.includes(serverName);
   }
 
   /**
