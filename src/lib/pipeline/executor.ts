@@ -1,4 +1,6 @@
 import { db } from "@/lib/db";
+import { batchInsertFindings, batchInsertSynthesis } from "@/lib/db-batch";
+import { saveCheckpoint } from "./checkpoint";
 import { think } from "./think";
 import { construct } from "./construct";
 import { deploy } from "./deploy";
@@ -12,7 +14,12 @@ import {
 } from "./quality-assurance";
 import { withRetry } from "./retry";
 import { CostTracker } from "./cost";
-import { waitForBlueprintApproval, cancelApproval } from "./approval";
+import {
+  waitForBlueprintApproval,
+  cancelApproval,
+  waitForTriageApproval,
+  cancelTriageApproval
+} from "./approval";
 import type {
   Blueprint,
   PipelineEvent,
@@ -177,7 +184,7 @@ export async function executePipeline(
     });
 
     await db.agent.updateMany(runId, { status: "complete", progress: 100 });
-    await db.finding.createMany(findingsData);
+    await batchInsertFindings(findingsData, 100);
 
     if (agentResults.length < 2) {
       throw new Error(
@@ -186,6 +193,24 @@ export async function executePipeline(
     }
 
     checkAbort();
+
+    // ── TRIAGE Gate (supervised & guided modes only) ──────────
+    if (autonomyMode === "supervised" || autonomyMode === "guided") {
+      currentPhase = "TRIAGE";
+      await updateRunStatus(runId, "TRIAGE");
+      emitEvent({
+        type: "phase_change",
+        phase: "TRIAGE",
+        message: "Awaiting human review of findings..."
+      });
+
+      try {
+        await waitForTriageApproval(runId);
+      } catch (err) {
+        cancelTriageApproval(runId);
+        throw err;
+      }
+    }
 
     currentPhase = "SYNTHESIZE";
     await updateRunStatus(runId, "SYNTHESIZE");
@@ -196,7 +221,7 @@ export async function executePipeline(
       { maxRetries: 2, baseDelayMs: 2000, signal, label: "SYNTHESIZE" },
     );
 
-    await db.synthesis.createMany(
+    await batchInsertSynthesis(
       synthesis.layers.map((layer, i) => ({
         layerName: layer.name,
         description: layer.description,
@@ -204,6 +229,7 @@ export async function executePipeline(
         sortOrder: i,
         runId,
       })),
+      100,
     );
 
     const qualityReport = buildQualityReport(agentResults, synthesis);

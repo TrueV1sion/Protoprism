@@ -3,10 +3,12 @@
  *
  * Receives the user's finding actions (keep/dismiss/boost/flag) and
  * persists them to the database so the synthesis phase can honor them.
+ * Also unblocks the executor if it's waiting for triage approval.
  */
 
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { db } from "@/lib/db";
+import { approveTriageForRun } from "@/lib/pipeline/approval";
 
 const VALID_ACTIONS = ["keep", "dismiss", "boost", "flag"];
 
@@ -36,15 +38,13 @@ export async function POST(request: Request) {
       }
     }
 
-    // Batch update findings
-    const updates = Object.entries(actions).map(([findingId, action]) =>
-      prisma.finding.updateMany({
-        where: { id: findingId, runId },
-        data: { action },
-      }),
-    );
+    // Batch update findings using Supabase
+    for (const [findingId, action] of Object.entries(actions)) {
+      await db.finding.update(findingId, { action });
+    }
 
-    await Promise.all(updates);
+    // Unblock the executor if it's waiting for triage approval
+    approveTriageForRun(runId);
 
     return NextResponse.json({
       success: true,

@@ -413,6 +413,15 @@ export const db = {
       const { error } = await supabase.from("findings").insert(snakeRows);
       if (error) throw new Error(`db.finding.createMany: ${error.message}`);
     },
+
+    async update(id: string, data: Record<string, unknown>) {
+      const snakeData = toSnake(data);
+      const { error } = await supabase
+        .from("findings")
+        .update(snakeData)
+        .eq("id", id);
+      if (error) throw new Error(`db.finding.update: ${error.message}`);
+    },
   },
 
   // ── Synthesis ───────────────────────────────────────────

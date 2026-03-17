@@ -104,3 +104,82 @@ export function cancelApproval(runId: string): void {
     pendingApprovals.delete(runId);
   }
 }
+
+// ─── Triage Approval Registry ─────────────────────────────────────
+
+const triageGlobalKey = "__prism_triage_approval_registry__";
+
+type TriageApprovalRegistry = {
+  pendingTriageApprovals: Map<string, PendingApproval>;
+  preApprovedTriage: Set<string>;
+};
+
+function getTriageRegistry(): TriageApprovalRegistry {
+  const g = globalThis as Record<string, unknown>;
+  if (!g[triageGlobalKey]) {
+    g[triageGlobalKey] = {
+      pendingTriageApprovals: new Map<string, PendingApproval>(),
+      preApprovedTriage: new Set<string>(),
+    };
+  }
+  return g[triageGlobalKey] as TriageApprovalRegistry;
+}
+
+/**
+ * Wait for triage approval for a given run.
+ * Returns a Promise that resolves when the client submits triage decisions.
+ * Times out after 10 minutes.
+ */
+export function waitForTriageApproval(
+  runId: string,
+  timeoutMs: number = 10 * 60 * 1000,
+): Promise<void> {
+  const { pendingTriageApprovals, preApprovedTriage } = getTriageRegistry();
+
+  if (preApprovedTriage.has(runId)) {
+    preApprovedTriage.delete(runId);
+    return Promise.resolve();
+  }
+
+  return new Promise<void>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      pendingTriageApprovals.delete(runId);
+      reject(new Error("Triage approval timed out after 10 minutes"));
+    }, timeoutMs);
+
+    pendingTriageApprovals.set(runId, { resolve, reject, timeout });
+  });
+}
+
+/**
+ * Approve triage for a pending run. Returns true if approval was accepted.
+ */
+export function approveTriageForRun(runId: string): boolean {
+  const { pendingTriageApprovals, preApprovedTriage } = getTriageRegistry();
+
+  const pending = pendingTriageApprovals.get(runId);
+  if (pending) {
+    clearTimeout(pending.timeout);
+    pending.resolve();
+    pendingTriageApprovals.delete(runId);
+    return true;
+  }
+
+  preApprovedTriage.add(runId);
+  return true;
+}
+
+/**
+ * Cancel pending triage approval.
+ */
+export function cancelTriageApproval(runId: string): void {
+  const { pendingTriageApprovals, preApprovedTriage } = getTriageRegistry();
+
+  preApprovedTriage.delete(runId);
+  const pending = pendingTriageApprovals.get(runId);
+  if (pending) {
+    clearTimeout(pending.timeout);
+    pending.reject(new Error("Pipeline aborted"));
+    pendingTriageApprovals.delete(runId);
+  }
+}
