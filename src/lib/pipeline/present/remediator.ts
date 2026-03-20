@@ -95,13 +95,13 @@ function buildRemediatorUserPrompt(input: RemediationInput): string {
   }
 
   // Chart data fragments for reference
-  if (input.chartData.length > 0) {
+  if ((input.chartData ?? []).length > 0) {
     parts.push(`## Pre-Computed Chart Fragments`);
     parts.push(`INSERT these fragments directly into the repaired slide if they are missing or malformed.`);
     parts.push(``);
 
-    for (let i = 0; i < input.chartData.length; i++) {
-      const chart = input.chartData[i];
+    for (let i = 0; i < (input.chartData ?? []).length; i++) {
+      const chart = (input.chartData ?? [])[i];
       parts.push(`### Chart ${i + 1} (type: ${chart.type})`);
 
       if ("svgFragment" in chart) {
@@ -269,4 +269,85 @@ export async function remediateContentIssues(
   const html = renderSlide(originalInput.templateId, updatedContent, chartFragments);
 
   return { content: updatedContent, html };
+}
+
+// ─── Remediation Context Builder ──────────────────────────────────────────────
+
+/** Return type for the remediation context used in targeted slide repair. */
+export interface RemediationContext {
+  slideType: string;
+  slideLabel: string;
+  exemplarHtml: string;
+  componentRef: string;
+}
+
+/**
+ * Canonical component hints per slide type that are always included in the
+ * component reference even when absent from the rendered HTML.
+ */
+const SLIDE_TYPE_CANONICAL_CLASSES: Partial<Record<string, string[]>> = {
+  "title": ["hero-title", "hero-sub", "hero-stats", "slide-title"],
+  "executive-summary": ["slide-title", "stat-grid", "comparison-bars", "feature-grid"],
+  "dimension-deep-dive": ["slide-title", "finding-card", "quote-block", "tag"],
+  "data-metrics": ["slide-title", "stat-block", "bar-chart", "donut-chart"],
+  "emergence": ["slide-title", "emergence-card", "emergent-why"],
+  "tension": ["slide-title", "finding-card", "grid-2"],
+  "findings-toc": ["slide-title", "toc-group-header", "toc-item"],
+  "closing": ["slide-title", "hero-title"],
+};
+
+/**
+ * Infers the slide type from the `data-slide-type` attribute in the rendered
+ * HTML, falling back to the empty string when the attribute is absent.
+ */
+function inferSlideTypeFromHtml(html: string): string {
+  const match = html.match(/data-slide-type="([^"]+)"/);
+  return match ? match[1] : "";
+}
+
+/**
+ * Extracts unique CSS class names used in the rendered HTML, excluding slot
+ * placeholders (`{{…}}`).
+ */
+function extractHtmlClasses(html: string): string[] {
+  const classes = new Set<string>();
+  for (const match of html.matchAll(/class="([^"]*?)"/g)) {
+    for (const cls of match[1].split(/\s+/)) {
+      if (cls && !cls.startsWith("{{")) classes.add(cls);
+    }
+  }
+  return [...classes];
+}
+
+/**
+ * Builds a structured remediation context for a single slide, used to
+ * construct targeted system + user prompts in the repair loop.
+ *
+ * - Infers `slideType` from the `data-slide-type` attribute when not supplied
+ * - Constructs a human-readable `slideLabel`
+ * - Populates `exemplarHtml` from the input or the ComponentCatalog
+ * - Generates a `componentRef` string listing every relevant CSS class
+ */
+export function buildRemediationContext(
+  input: RemediationInput,
+  catalog: ComponentCatalog,
+): RemediationContext {
+  const slideType =
+    input.slideType ?? inferSlideTypeFromHtml(input.originalHtml);
+  const templateId = input.templateId ?? "";
+  const slideLabel = `${slideType} slide (${templateId})`;
+
+  const exemplarHtml =
+    input.exemplarHtml?.trim()
+      ? input.exemplarHtml
+      : catalog.exemplarForSlideType(slideType);
+
+  // Collect classes from the rendered HTML plus canonical classes for this type
+  const htmlClasses = extractHtmlClasses(input.originalHtml);
+  const canonicalClasses = SLIDE_TYPE_CANONICAL_CLASSES[slideType] ?? ["slide-title"];
+  const allClasses = [...new Set([...htmlClasses, ...canonicalClasses])];
+
+  const componentRef = catalog.componentReference(allClasses);
+
+  return { slideType, slideLabel, exemplarHtml, componentRef };
 }
