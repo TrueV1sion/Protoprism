@@ -41,7 +41,7 @@ export const SlideTypeSchema = z.enum([
 ]);
 export type SlideType = z.infer<typeof SlideTypeSchema>;
 
-export const AnimationTypeSchema = z.enum(["anim", "anim-scale", "anim-blur"]);
+export const AnimationTypeSchema = z.enum(["anim", "anim-scale", "anim-blur", "stagger-children"]);
 export type AnimationType = z.infer<typeof AnimationTypeSchema>;
 
 export const ChartRoleSchema = z.enum([
@@ -245,11 +245,15 @@ export type DesignReview = z.infer<typeof DesignReviewSchema>;
 
 export interface RemediationInput {
   slideNumber: number;
+  slideType?: string;
+  templateId?: string;
+  componentHints?: string[];
   originalHtml: string;
   validatorIssues: SlideIssue[];
   reviewerFeedback?: string;
   exemplarHtml: string;
-  chartData: ChartData[];
+  chartData?: ChartData[];
+  chartFragments?: string[];
 }
 
 // ─── Pipeline Orchestrator (internal) ────────────────────────

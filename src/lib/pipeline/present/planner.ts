@@ -436,3 +436,101 @@ Return a JSON object matching this schema:
 
   return validated as TemplateSlideManifest;
 }
+
+// ─── Legacy Manifest Normalizer ───────────────────────────────────────────────
+
+/**
+ * The canonical spine order for PRISM briefings.
+ */
+const SLIDE_SPINE_ORDER: SlideManifest["slides"][number]["type"][] = [
+  "title",
+  "findings-toc",
+  "executive-summary",
+  "dimension-deep-dive",
+  "data-metrics",
+  "emergence",
+  "tension",
+  "closing",
+];
+
+/**
+ * Extra component hints enriched per slide type during normalization.
+ */
+const SLIDE_COMPONENT_ENRICHMENTS: Partial<Record<string, string[]>> = {
+  "title": ["hero-title", "hero-stats"],
+  "findings-toc": ["icon-grid"],
+  "executive-summary": ["comparison-bars", "feature-grid"],
+  "dimension-deep-dive": ["quote-block"],
+  "data-metrics": ["stat-block", "bar-chart"],
+  "emergence": ["emergence-card"],
+  "tension": ["grid-2"],
+  "closing": ["process-flow"],
+};
+
+/**
+ * Normalizes a legacy SlideManifest from the base planner into the canonical
+ * executive spine ordering and enriches component hints and chart roles.
+ *
+ * - Reorders slides to the canonical spine (title → toc → exec-summary → … → closing)
+ * - Sets the title slide's agentSources to the full agent roster
+ * - Enriches componentHints with type-specific component families
+ * - Remaps dataPoint chartRoles to the appropriate chart role for each slide type
+ * - Sets animationType to "stagger-children" for data-metrics slides
+ */
+export function normalizeLegacyManifest(
+  manifest: SlideManifest,
+  agents: AgentResult[],
+): SlideManifest {
+  const allAgentNames = agents.map((a) => a.agentName);
+
+  // Sort slides by canonical spine; preserve relative order within same type.
+  // Unknown slide types (indexOf returns -1) are placed just before "closing"
+  // (the last entry) so they appear at the end of the body content.
+  const BEFORE_CLOSING = SLIDE_SPINE_ORDER.length - 1;
+  const sorted = [...manifest.slides].sort((a, b) => {
+    const ai = SLIDE_SPINE_ORDER.indexOf(a.type);
+    const bi = SLIDE_SPINE_ORDER.indexOf(b.type);
+    const aIdx = ai === -1 ? BEFORE_CLOSING : ai;
+    const bIdx = bi === -1 ? BEFORE_CLOSING : bi;
+    return aIdx - bIdx;
+  });
+
+  const normalized = sorted.map((slide, idx) => {
+    const enrichments = SLIDE_COMPONENT_ENRICHMENTS[slide.type] ?? [];
+    const hints = [...new Set([...slide.componentHints, ...enrichments])];
+
+    // Title slide receives the full agent roster
+    const agentSources =
+      slide.type === "title" ? allAgentNames : slide.agentSources;
+
+    // Remap chart roles and animation type per slide type
+    let dataPoints = slide.dataPoints;
+    let animationType = slide.animationType;
+
+    if (slide.type === "executive-summary" && dataPoints.length > 0) {
+      dataPoints = dataPoints.map((dp, i) => ({
+        ...dp,
+        chartRole: i === 0 ? "counter-target" : "bar-fill-percent",
+      }));
+    }
+
+    if (slide.type === "data-metrics" && dataPoints.length > 0) {
+      dataPoints = dataPoints.map((dp, i) => ({
+        ...dp,
+        chartRole: i === 0 ? "counter-target" : i === 1 ? "line-point" : dp.chartRole,
+      }));
+      animationType = "stagger-children";
+    }
+
+    return {
+      ...slide,
+      slideNumber: idx + 1,
+      agentSources,
+      componentHints: hints,
+      dataPoints,
+      animationType,
+    };
+  });
+
+  return { ...manifest, slides: normalized, totalSlides: normalized.length };
+}

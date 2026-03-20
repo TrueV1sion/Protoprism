@@ -9,8 +9,8 @@ describe("Template File Validation", () => {
   const expectedCounts: Record<string, number> = {
     "single-focus": 5,
     "data-viz": 8,
-    "content": 7,
-    "composite": 5,
+    "content": 8,
+    "composite": 6,
   };
 
   for (const dir of layoutDirs) {

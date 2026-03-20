@@ -82,6 +82,7 @@ export interface ToolResult {
   vintage: DataVintage;
   confidence: "HIGH" | "MEDIUM" | "LOW";
   truncated: boolean;
+  structuredData?: Record<string, unknown>;
 }
 
 export interface Citation {

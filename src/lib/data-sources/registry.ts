@@ -603,3 +603,90 @@ export function getToolRegistry(): ToolRegistry {
 export function resetToolRegistry(): void {
   registryInstance = null;
 }
+
+// ─── Structured Data Extractor ────────────────────────────────────────────────
+
+/**
+ * Derives a structured data record from a ToolResult for use in the template
+ * pipeline's data-aware planning and chart compilation.
+ *
+ * - If the result already carries explicit `structuredData`, that is returned
+ *   as-is without merging.
+ * - Otherwise, citation `resultCount` values are projected into
+ *   `citation_result_counts` and any markdown tables in `content` are parsed
+ *   into `table_N` arrays of `{ label, period, value }` records.
+ * - Returns `undefined` when no structured data can be derived.
+ */
+export function buildStructuredDataFromResult(
+  result: ToolResult,
+): Record<string, unknown> | undefined {
+  if (result.structuredData) {
+    return result.structuredData;
+  }
+
+  const out: Record<string, unknown> = {};
+
+  // Project citation result counts.
+  // `period` mirrors `label` (the source name) because citation metadata does
+  // not carry temporal granularity — the chart compiler uses `period` as the
+  // x-axis label, so the source name is the most meaningful fallback here.
+  const citationCounts = result.citations
+    .filter((c) => c.resultCount !== undefined)
+    .map((c) => ({
+      label: c.source,
+      period: c.source,
+      value: c.resultCount as number,
+      query: c.query,
+    }));
+
+  if (citationCounts.length > 0) {
+    out.citation_result_counts = citationCounts;
+  }
+
+  // Parse markdown tables from content
+  const lines = result.content.split("\n");
+  let tableIdx = 0;
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i].trim();
+    if (
+      line.startsWith("|") &&
+      i + 1 < lines.length &&
+      /^\|[-: |]+\|$/.test(lines[i + 1].trim())
+    ) {
+      // Skip header row and separator
+      i += 2;
+
+      const rows: { label: string; period: string; value: number }[] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        const cells = lines[i]
+          .trim()
+          .split("|")
+          .slice(1, -1)
+          .map((c) => c.trim());
+        if (cells.length >= 2) {
+          const label = cells[0];
+          const value = Number(cells[1]);
+          if (!isNaN(value)) {
+            // `period` mirrors `label` (first column) because generic markdown
+            // tables may not have an explicit time dimension; the chart compiler
+            // uses `period` as the x-axis category label.
+            rows.push({ label, period: label, value });
+          }
+        }
+        i++;
+      }
+
+      if (rows.length > 0) {
+        out[`table_${tableIdx}`] = rows;
+        tableIdx++;
+      }
+
+      continue;
+    }
+    i++;
+  }
+
+  return Object.keys(out).length > 0 ? out : undefined;
+}

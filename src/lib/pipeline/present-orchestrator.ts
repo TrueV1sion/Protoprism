@@ -687,3 +687,24 @@ function countByTier(results: AgentResult[], tier: string): number {
     0,
   );
 }
+
+// ─── Pipeline Mode Resolver ───────────────────────────────────────────────────
+
+const SUPPORTED_PRESENTATION_MODES = new Set(["auto", "legacy", "template"]);
+
+/**
+ * Resolves the presentation pipeline mode from the environment.
+ *
+ * Reads `PRISM_PRESENTATION_MODE`, trims whitespace, lowercases, and validates
+ * against the supported set {"auto", "legacy", "template"}. Falls back to
+ * "legacy" if the value is absent or unrecognized.
+ */
+export function resolvePresentationPipelineMode(
+  env: Partial<NodeJS.ProcessEnv>,
+): "auto" | "legacy" | "template" {
+  const raw = env.PRISM_PRESENTATION_MODE?.trim().toLowerCase();
+  if (raw && SUPPORTED_PRESENTATION_MODES.has(raw)) {
+    return raw as "auto" | "legacy" | "template";
+  }
+  return "legacy";
+}
